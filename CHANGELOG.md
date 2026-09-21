@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-09-21
+
+Wording release. The skill content is unchanged from 0.1.1.
+
+### Changed
+
+- The `Not this` table in `README.md` and the `When NOT to use` list in
+  `SKILL.md` name the sibling
+  [`ecommerce-process-mining`](https://github.com/timerise-ai/ecommerce-process-mining)
+  skill, so a request to watch how employees work lands there rather than
+  here. Both skills build a Manifest V3 extension, and the boundary between
+  them is what the extension is for: a service's data, or a record of the
+  work.
+
 ## [0.1.1] - 2026-09-21
 
 Wording release. The skill content is unchanged from 0.1.0.
