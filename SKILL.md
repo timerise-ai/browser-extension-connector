@@ -144,3 +144,5 @@ pacing down. No inbound connection to the user's machine is needed.
 | Running it | runbook, silence, diagnostics, paused, revoked, reload | [operations.md](references/operations.md) |
 | Fitting it to a host | seam, rename, host probe, order of work | [adaptation.md](references/adaptation.md) |
 | Why the templates read as they do | provenance, defect, kept deliberately, added | [provenance.md](references/provenance.md) |
+
+Part of the [Timerise Skills](https://github.com/timerise-ai/skills) index, which lists the sibling skills.

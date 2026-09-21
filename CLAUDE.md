@@ -26,10 +26,10 @@ run in production. That file is the rationale layer: read it before "simplifying
 
 ## Structure
 
-- `SKILL.md`: entry point, loaded whole on every activation, so it stays between 130 and 160 lines. The
-  frontmatter `description` is the trigger surface; the body carries the architecture diagram, six **critical
-  facts**, six **hard rules**, the quick-start order, and the **reference directory table** mapping trigger
-  keywords to files.
+- `SKILL.md`: entry point, loaded whole on every activation, so it stays between 130 and 160 lines, the
+  closing index line aside. The frontmatter `description` is the trigger surface; the body carries the
+  architecture diagram, six **critical facts**, six **hard rules**, the quick-start order, the **reference
+  directory table** mapping trigger keywords to files, and a closing line linking the skills index.
 - `README.md`: the human-facing front door, in the section order of the skill standard: install, activation,
   the file table, the six non-negotiables, requirements, security, verification, the *Not this* table,
   contributing.
