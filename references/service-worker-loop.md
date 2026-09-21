@@ -1,6 +1,6 @@
 # The service worker: plumbing
 
-`background/index.ts` is Chrome plumbing only — ports, the alarm, the timer,
+`background/index.ts` is Chrome plumbing only: ports, the alarm, the timer,
 message routing, bootstrap. The logic is in `Engine`
 ([sync-engine.md](sync-engine.md)) so it can be driven in a test without a
 browser.
@@ -8,6 +8,7 @@ browser.
 ## src/background/index.ts
 
 ```ts
+// extension/src/background/index.ts
 import { ADAPTERS } from "../adapters";
 import type { ServiceHttp } from "../adapters/types";
 import type {
@@ -29,18 +30,18 @@ import { PortRegistry } from "./ports";
 import { RecordQueue, chromeStore } from "./queue";
 
 /**
- * The service worker: the only place with a loop, and only Chrome plumbing —
+ * The service worker: the only place with a loop, and only Chrome plumbing;
  * the logic is in `engine.ts`.
  *
  * Its cadence is the honest part of this module. MV3 evicts an idle worker
  * after roughly 30 seconds, and `chrome.alarms` will not fire more often than
  * once a minute. So:
  *
- *  - **A service tab is open** → the relay holds a port and pings it every
+ *  - **A service tab is open**: the relay holds a port and pings it every
  *    20 s, which keeps the worker alive, and the loop runs on `setInterval`
  *    at the host's requested cadence.
- *  - **No service tab is open** → the alarm floor applies: once a minute.
- *  - **The browser is closed** → nothing happens at all, and the host's
+ *  - **No service tab is open**: the alarm floor applies: once a minute.
+ *  - **The browser is closed**: nothing happens at all, and the host's
  *    health badge is how anyone finds out.
  */
 
@@ -58,7 +59,7 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== KEEPALIVE_PORT) return;
   ports.add(port);
   port.onMessage.addListener((msg: RelayFetchResult | RelayStatusResult | RelayPing) => {
-    // A ping's arrival has already done its job — reset the worker's idle timer.
+    // A ping's arrival has already done its job: it reset the worker's idle timer.
     if (msg?.type === "relay-ping") return;
     if (msg?.type === "relay-status-result") {
       pendingStatus.get(msg.id)?.(msg);
@@ -114,7 +115,7 @@ const http: ServiceHttp = async (req) => {
   });
 };
 
-/** `null` when no tab is open or it does not answer in time — ordinary states, not errors. */
+/** `null` when no tab is open or it does not answer in time: ordinary states, not errors. */
 function relayStatus(): Promise<RelayStatusResult | null> {
   const port = ports.any();
   if (!port) return Promise.resolve(null);
@@ -169,8 +170,8 @@ const engine = new Engine(
  * The once-a-minute floor, created only when it is missing.
  *
  * `chrome.alarms.create` **replaces** an alarm of the same name and restarts
- * its period, so calling it unconditionally at module scope — which runs on
- * every worker startup — pushed the next fire a full minute away each time
+ * its period, so calling it unconditionally at module scope (which runs on
+ * every worker startup) pushed the next fire a full minute away each time
  * the worker woke. A worker revived and evicted more often than that never
  * reached its own alarm, and the floor guaranteed nothing.
  */
@@ -216,7 +217,7 @@ chrome.runtime.onMessage.addListener(
  * a full interval away, and a worker revived for a single event is routinely
  * evicted before then. Without a poll on the way up, a browser that keeps
  * waking the worker for short bursts can go a long time without posting at
- * all — which reads in the host as silence from a machine that is plainly on.
+ * all, which reads in the host as silence from a machine that is plainly on.
  */
 async function bootstrap(): Promise<void> {
   await engine.loadAccountId();
@@ -233,7 +234,7 @@ void bootstrap();
 
 **The alarm is created only when absent.** `chrome.alarms.create` *replaces*
 an alarm of the same name and restarts its period. Creating it unconditionally
-at module scope — which runs on every worker startup — pushed the next fire a
+at module scope (which runs on every worker startup) pushed the next fire a
 full minute away each time the worker woke. A worker revived and evicted more
 often than that (a tab reconnecting its port, an update, a crash) never reached
 its own alarm, and the once-a-minute floor guaranteed nothing. The host showed
@@ -247,12 +248,13 @@ bursts can go a long time without posting at all.
 **Nothing learned from the page lives only in a module variable.** The
 account id is persisted the moment it is seen, and the host echoes it back on
 every poll, because a worker back from eviction has all module state at
-`null` — and a pull that needs the account would otherwise sit at zero until
+`null`, and a pull that needs the account would otherwise sit at zero until
 somebody happened to click around in the service.
 
 ## Every live port, not the last one
 
 ```ts
+// extension/src/background/ports.ts
 /**
  * Every live relay port, so a request can go to *any* open service tab.
  *
@@ -273,7 +275,7 @@ export class PortRegistry<P extends { postMessage(message: unknown): void }> {
     this.ports.delete(port);
   }
 
-  /** Any live port, or `null`. Insertion order — the longest-lived tab first. */
+  /** Any live port, or `null`. Insertion order: the longest-lived tab first. */
   any(): P | null {
     for (const p of this.ports) return p;
     return null;
@@ -301,9 +303,10 @@ pull. Refusing is what makes the failure visible on the connection card.
 ## Constants
 
 ```ts
+// extension/src/background/constants.ts
 /**
  * Constants the service worker shares with its tests. Split out of `index.ts`
- * because that module installs listeners and starts a timer at import time —
+ * because that module installs listeners and starts a timer at import time,
  * importing it from a test would boot the extension.
  */
 

@@ -9,7 +9,7 @@ touched only through the server contract and the strings.
 | Seam | The skill ships | The host supplies |
 |---|---|---|
 | Record kinds | a generic envelope; `kind` is a string | its kinds and per-kind payload schemas, on both sides of the wire |
-| Pull kinds, command kinds | `pull(kind, …)`, `execute(command)` | the vocabulary and what each does |
+| Pull kinds, command kinds | `pull(kind, ...)`, `execute(command)` | the vocabulary and what each does |
 | Adapter | `ConnectorAdapter` + a stub | one adapter per service, as its own skill |
 | Host endpoints | the contract in [server-contract.md](server-contract.md) | routes, staging, links, command queue, cron, in its idiom |
 | Auth to host | per-pairing bearer token in the body | minting, hashing, revocation, PIN |

@@ -3,8 +3,8 @@
  *
  * Reloading or updating an extension leaves the content scripts already running
  * in open tabs alive on the page but detached from the extension: every
- * `chrome.runtime.*` call from then on throws. That state is **terminal** —
- * only loading the page again injects fresh scripts — while the failures it is
+ * `chrome.runtime.*` call from then on throws. That state is **terminal**,
+ * only loading the page again injects fresh scripts, while the failures it is
  * easily confused with (a service worker mid-restart, a port replaced by an
  * update) are worth retrying.
  *

@@ -2,19 +2,19 @@
 
 Everything the worker does that is not Chrome plumbing, as one class with
 injected dependencies. `index.ts` constructs it; the tests construct it with
-fakes ([tests.md](tests.md)). The diagnostics screen drives it from outside —
+fakes ([tests.md](tests.md)). The diagnostics screen drives it from outside,
 [diagnostics.md](diagnostics.md).
 
 ## Behaviour contract
 
 | Situation | Behaviour |
 |---|---|
-| Tick fires while a pass is running | skipped, not queued — a slow pull page must not stack up ticks |
+| Tick fires while a pass is running | skipped, not queued: a slow pull page must not stack up ticks |
 | Host answers 401 | `UnauthorizedError`; the pairing is marked revoked where the popup reads; no retry |
 | Host does not answer | error and acks put back for the next attempt; `notBefore` set from the client's backoff; recorded as a failed post |
 | Host answers, any post | account bound, **commands run**, pull step if directed, cadence updated |
 | Command kind unknown to this build | left unacknowledged so the lease expires and a newer build gets it |
-| Command with no account known | acked as failed — we do not know whose data we would touch |
+| Command with no account known | acked as failed: we do not know whose data we would touch |
 | Adapter has no `execute` | commands left unacknowledged |
 | Pull page fails | reported in `error`, cursor untouched on the host, retried next tick from the same place |
 | Pull page partial (`page.error`) | records kept, reason reported, host retries |
@@ -24,6 +24,7 @@ fakes ([tests.md](tests.md)). The diagnostics screen drives it from outside —
 ## src/background/engine.ts
 
 ```ts
+// extension/src/background/engine.ts
 import type { Ack, Command, ConnectorRecord, SyncResponse } from "../wire";
 import type { ConnectorAdapter, Observed, ServiceHttp } from "../adapters/types";
 import type { RelayStatusResult } from "../shared/messages";
@@ -48,7 +49,7 @@ export type EngineDeps = {
   bindPairing(connectionId: string, accountId: string): Promise<void>;
   recordLastPost(connectionId: string, outcome: LastPost): Promise<void>;
   loadLastPosts(): Promise<Record<string, LastPost>>;
-  /** A request performed in the service page's session — the relay. */
+  /** A request performed in the service page's session, through the relay. */
   http: ServiceHttp;
   /** What the open service tab can vouch for; `null` when none is open. */
   relayStatus(): Promise<RelayStatusResult | null>;
@@ -74,7 +75,7 @@ export class Engine {
   private batchSeq = 0;
   /**
    * The service account currently on screen. Persisted the moment it is
-   * learned — a worker is evicted between polls and comes back with module
+   * learned: a worker is evicted between polls and comes back with module
    * state at `null`. Last seen wins; which connection a record is *for* is a
    * separate question answered per pairing by `routing.ts`.
    */
@@ -148,7 +149,7 @@ export class Engine {
         }
       }
       // Records for an account nobody here is paired with would otherwise sit
-      // until they aged out as "dropped" — which the host shows as data loss.
+      // until they aged out as "dropped", which the host shows as data loss.
       await this.deps.queue.discard((r) => orphaned(r, pairings, this.observedAccountId));
     });
   }
@@ -171,7 +172,7 @@ export class Engine {
    * One poll for one pairing: records up, commands and the pull step down.
    * Throws `UnauthorizedError` and nothing else; every other failure is
    * recorded and swallowed, because the loop must go on to the next pairing.
-   * `pull: false` skips the pull step — everything else still runs, in
+   * `pull: false` skips the pull step; everything else still runs, in
    * particular the commands the host handed out under a lease.
    */
   async syncOne(pairing: Pairing, { pull }: { pull: boolean }): Promise<SyncResponse | null> {
@@ -188,7 +189,7 @@ export class Engine {
       records: batch.map(toWireRecord),
       externalAccountId: account,
       dropped: dropped || undefined,
-      // What will still be waiting *after* this post — the batch riding on it
+      // What will still be waiting *after* this post: the batch riding on it
       // is not "waiting", and counting it made a healthy connection read
       // "1 queued" forever. Always sent, including zero: a drained buffer has
       // to be able to say so.
@@ -223,7 +224,7 @@ export class Engine {
 
   /**
    * One post, with the bookkeeping every post needs: the pending error and
-   * acks ride along, and come back if nothing reached the host — an ack lost
+   * acks ride along, and come back if nothing reached the host; an ack lost
    * here is a command whose lease expires and which runs **again**.
    */
   private async exchange(pairing: Pairing, payload: Omit<SyncPayload, "error" | "ack">): Promise<SyncResponse | null> {
@@ -262,14 +263,14 @@ export class Engine {
 
   /**
    * Everything a response is owed, whichever post produced it. The host may
-   * claim and hand out commands on **any** post — a progress-only post
-   * included — and a response whose commands are dropped burns their lease
+   * claim and hand out commands on **any** post, a progress-only post
+   * included, and a response whose commands are dropped burns their lease
    * and an attempt each time, until they fail without ever having run.
    */
   async handleResponse(pairing: Pairing, adapter: ConnectorAdapter, response: SyncResponse, { pull }: { pull: boolean }): Promise<void> {
     // Before anything that needs it: a worker back from eviction with no
     // account id would otherwise fail the whole tick. The host's word is the
-    // binding — it routes records to this pairing from now on.
+    // binding: it routes records to this pairing from now on.
     const account = response.externalAccountId || accountFor(pairing, this.observedAccountId);
     if (response.externalAccountId) await this.deps.bindPairing(pairing.connectionId, response.externalAccountId);
 
@@ -291,7 +292,7 @@ export class Engine {
     this.errorBuffer.set(connectionId, message.slice(0, 500));
   }
 
-  /** `null` — never `undefined` — when there is none: the host reads a present `null` as "the fault is over". */
+  /** `null`, never `undefined`, when there is none: the host reads a present `null` as "the fault is over". */
   private drainError(connectionId: string): string | null {
     const message = this.errorBuffer.get(connectionId) ?? null;
     this.errorBuffer.delete(connectionId);
@@ -307,7 +308,7 @@ export class Engine {
   /**
    * Results are buffered and reported on the **next** post, so a create and
    * its acknowledgement are two round trips and a browser closing between
-   * them lets the lease expire — the command comes back rather than being lost.
+   * them lets the lease expire: the command comes back rather than being lost.
    * Appended one at a time, so a worker evicted mid-list keeps the acks for
    * the commands it did finish.
    */
@@ -319,7 +320,7 @@ export class Engine {
   }
 
   /**
-   * One command. `null` means "a kind this build does not know" — left
+   * One command. `null` means "a kind this build does not know": left
    * unacknowledged on purpose, so the lease expires and a newer build gets to
    * try, rather than this one reporting a permanent failure on its behalf.
    */
@@ -360,11 +361,11 @@ export class Engine {
         pull: { kind: directive.kind, cursor: page.cursor, done: page.done, total: page.total ?? null, finished: page.cursor === null, skipped: page.skipped },
       });
       // The page's records are safe in the buffer either way; only the cursor
-      // failed to move, and the next tick re-reads the same page — which the
+      // failed to move, and the next tick re-reads the same page, which the
       // buffer and the host both de-duplicate.
       if (!response) throw new Error(t("pullProgressNotSaved"));
       // The progress post is a post like any other: whatever it was handed
-      // must be run. `pull: false` — this tick has done its page.
+      // must be run. `pull: false`: this tick has done its page.
       await this.handleResponse(pairing, adapter, response, { pull: false });
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
@@ -375,7 +376,7 @@ export class Engine {
 
 /**
  * The wire shape of a queued record, listed field by field rather than
- * spread, so `queuedAt` and `accountId` — buffer bookkeeping — cannot ride
+ * spread, so `queuedAt` and `accountId` (buffer bookkeeping) cannot ride
  * along, and anything added to the buffer later has to be added on purpose.
  */
 function toWireRecord(record: QueuedRecord): ConnectorRecord {
@@ -393,15 +394,15 @@ function toWireRecord(record: QueuedRecord): ConnectorRecord {
 
 **Every response is handled the same way.** The host may claim and hand out
 commands on *any* post, including the progress-only post the pull step makes.
-The version this was extracted from discarded that response; a command that
-became due between the two posts was leased and had its attempt counter
+The earlier implementation discarded that response; a command that became
+due between the two posts was leased and had its attempt counter
 incremented without running, and after enough misses was marked failed having
 never executed. `exchange()` + `handleResponse()` is the fix, and
 `engine.test.ts` pins it.
 
 **Acks ride the next post, never the same one.** A create and its
 acknowledgement are two round trips, so a browser closing between them lets
-the lease expire and the command comes back — rather than being lost. Acks are
+the lease expire and the command comes back rather than being lost. Acks are
 appended one at a time so a worker evicted mid-list keeps the ones it finished.
 
 **One client per connection, cached.** `SyncClient` counts consecutive

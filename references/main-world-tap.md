@@ -7,12 +7,12 @@ Everything about it that looks like style is a constraint.
 
 1. **No `chrome.*`.** MAIN-world code has no extension APIs. A stray
    `chrome.runtime.sendMessage` throws on the page and takes the tap down
-   silently — the page keeps working, nothing is captured, and nobody finds out
+   silently: the page keeps working, nothing is captured, and nobody finds out
    until a week of data is missing.
 2. **No imports.** The build keeps this bundle separate for the same reason,
    and because importing the relay (or anything that imports the relay) would
-   install the relay's logic in the page. Its two inputs — the capture pattern
-   and the header allowlist — arrive as **build-time defines** read from the
+   install the relay's logic in the page. Its two inputs, the capture pattern
+   and the header allowlist, arrive as **build-time defines** read from the
    adapter ([build-and-package.md](build-and-package.md)).
 
 And one that is about the build, not the code: the bundle must be a classic
@@ -23,6 +23,7 @@ below are deliberately not exported for that reason.
 ## src/inject/net-tap.ts
 
 ```ts
+// extension/src/inject/net-tap.ts
 /**
  * MAIN-world network tap.
  *
@@ -45,7 +46,7 @@ below are deliberately not exported for that reason.
  * person at a desk.
  *
  * It also captures request headers, because many services authenticate their
- * own API with headers rather than cookies — a request the extension issues
+ * own API with headers rather than cookies, a request the extension issues
  * itself cannot lean on the browser attaching anything. The tap records the
  * headers the page *already sent* and hands them to the relay, which replays
  * them. Rules that keep a live credential in extension memory honest, enforced
@@ -69,9 +70,9 @@ const AUTH_MESSAGE = "connector-auth";
 
 /** Only these ever leave the page. Anything else is not even inspected. */
 const CAPTURE = new RegExp(__TAP_CAPTURE__, "i");
-/** Explicit allowlist, not "whatever the page sent" — see the adapter. */
+/** Explicit allowlist, not "whatever the page sent". See the adapter. */
 const AUTH_HEADERS: string[] = __TAP_AUTH_HEADERS__;
-/** UTF-16 units, not bytes — a cheap ceiling, not a precise one. */
+/** UTF-16 units, not bytes: a cheap ceiling, not a precise one. */
 const MAX_BODY_CHARS = 512 * 1024;
 
 function emit(url: string, status: number, method: string, body: string): void {
@@ -120,8 +121,8 @@ function installFetchTap(): void {
   window.fetch = async function patched(this: unknown, ...args: Parameters<typeof fetch>) {
     const response = await original.apply(this as typeof globalThis, args);
     try {
-      // `fetch` takes a URL or a Request, and either may carry headers and
-      // method — read both from whichever supplied them.
+      // `fetch` takes a URL or a Request, and either may carry headers and a
+      // method, so read both from whichever supplied them.
       const [input, init] = args;
       const request = typeof input === "string" || input instanceof URL ? null : input;
       const url = request ? request.url : String(input);
@@ -162,7 +163,7 @@ function installXhrTap(): void {
     open.call(this, method, url, ...(rest as [boolean, string | null, string | null]));
   } as typeof XMLHttpRequest.prototype.open;
 
-  // Many SPAs use XHR for their API calls, so this — not the fetch tap — is
+  // Many SPAs use XHR for their API calls, so this, not the fetch tap, is
   // often where the auth headers are actually seen.
   XMLHttpRequest.prototype.setRequestHeader = function patchedSet(this: XMLHttpRequest, name: string, value: string): void {
     const m = meta.get(this);
@@ -181,7 +182,7 @@ function installXhrTap(): void {
       try {
         const m = meta.get(this);
         if (!m || !CAPTURE.test(m.url) || this.status < 200 || this.status >= 300) return;
-        // Reading `responseText` on a non-text `responseType` throws — and a
+        // Reading `responseText` on a non-text `responseType` throws, and a
         // throw in a load handler is invisible, so guard rather than catch.
         if (this.responseType && this.responseType !== "text" && this.responseType !== "json") return;
         const text = this.responseType === "json" ? JSON.stringify(this.response) : this.responseText;
@@ -219,13 +220,14 @@ Two mechanics that cost someone a day:
 ## The header fingerprint
 
 Auth headers are posted to the relay once per change, not on every request.
-The fingerprint is `origin | header names | length of the primary header` —
+The fingerprint is `origin | header names | length of the primary header`,
 the token's **length**, never its value. It only has to notice a rotation, and
 a value that never needs comparing never needs keeping.
 
 ## Configuring it from the adapter
 
 ```ts
+// extension/src/adapters/tap-config.ts
 /**
  * What the build injects into the MAIN-world tap. Point this at your adapter;
  * the tap bundle itself imports nothing, so this is the only route in.

@@ -7,7 +7,7 @@ What an operator sees, what they can do, and the ladder to climb when
 
 The extension runs in the user's own signed-in browser. It reads what the
 user opens in the service, pulls what the host asks for, and writes what the
-host commands — in the user's session, with the page's own credentials, which
+host commands, in the user's session, with the page's own credentials, which
 never leave the tab. Everything reaches the host through one poll. It works
 when the browser does: closed laptop, no sync; signed-out service, no pulls;
 both surface as a derived health badge in the host, neither is silently absorbed.
@@ -24,7 +24,7 @@ both surface as a derived health badge in the host, neither is silently absorbed
 | Rejected records | step 2 of the sync handler | a schema refusal from the host's side, which the extension cannot report because from its side the post succeeded |
 | Pull progress | `pull.done / total`, `skipped` | a bar pinned at zero is either slow or dead; `skipped` is the hole the user must be told about |
 
-Alert on silence, pushed and debounced to once a day, to whoever can act —
+Alert on silence, pushed and debounced to once a day, to whoever can act and
 not to the person whose browser stopped reporting.
 
 ## The diagnostics ladder
@@ -39,10 +39,10 @@ thing to fix ([diagnostics.md](diagnostics.md)).
 | Host: 401 | disconnected in the host, re-paired from another browser, host rotated its pepper | pair again |
 | Enabled: paused | new connections default to off | enable it in the host |
 | Service tab: none | pulls and commands need a signed-in tab | open the service, sign in, leave the tab |
-| Session: not seen | tab open, tap saw no authenticated request | load a page that calls the API; if it never turns green after that, the tap is not running — check the built bundle format |
+| Session: not seen | tab open, tap saw no authenticated request | load a page that calls the API; if it never turns green after that, the tap is not running: check the built bundle format |
 | Account: unknown | no response yet revealed the account id | open a page in the service that shows it |
 | Account: mismatch | bound to one account, tab shows another | switch the service to the right account; records from the wrong one are discarded, not dropped |
-| Buffer: dropped N | long offline period overflowed the buffer | nothing is permanently lost — pulls re-fetch, live records are re-observed |
+| Buffer: dropped N | long offline period overflowed the buffer | nothing is permanently lost: pulls re-fetch, live records are re-observed |
 | Writes: disabled | adapter's write path unverified | product-wide, not this install |
 
 ## Silence with the browser open
@@ -62,7 +62,7 @@ place should be named.
 
 ## When the service changes
 
-A change of **appearance** does not matter — nothing reads the screen. A change
+A change of **appearance** does not matter: nothing reads the screen. A change
 in **how data is served** shows as: the log goes quiet despite "connected", or
 records arrive with empty fields. The repair is an extension release, not a
 host deploy: capture the new responses, fix the adapter's parser, run its
@@ -88,7 +88,7 @@ second ([relay.md](relay.md)).
 ## Not built here
 
 - Log export from the popup (the worker's console is the only log).
-- A per-service "screens that matter" hint in the popup — observation makes
+- A per-service "screens that matter" hint in the popup: observation makes
   the user's habits part of the data path, and nothing tells them so; an
   adapter skill should add it.
 - Web Store listing mechanics; the zip is the self-hosted stopgap.

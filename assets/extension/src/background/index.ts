@@ -19,18 +19,18 @@ import { PortRegistry } from "./ports";
 import { RecordQueue, chromeStore } from "./queue";
 
 /**
- * The service worker: the only place with a loop, and only Chrome plumbing —
+ * The service worker: the only place with a loop, and only Chrome plumbing;
  * the logic is in `engine.ts`.
  *
  * Its cadence is the honest part of this module. MV3 evicts an idle worker
  * after roughly 30 seconds, and `chrome.alarms` will not fire more often than
  * once a minute. So:
  *
- *  - **A service tab is open** → the relay holds a port and pings it every
+ *  - **A service tab is open**: the relay holds a port and pings it every
  *    20 s, which keeps the worker alive, and the loop runs on `setInterval`
  *    at the host's requested cadence.
- *  - **No service tab is open** → the alarm floor applies: once a minute.
- *  - **The browser is closed** → nothing happens at all, and the host's
+ *  - **No service tab is open**: the alarm floor applies: once a minute.
+ *  - **The browser is closed**: nothing happens at all, and the host's
  *    health badge is how anyone finds out.
  */
 
@@ -48,7 +48,7 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== KEEPALIVE_PORT) return;
   ports.add(port);
   port.onMessage.addListener((msg: RelayFetchResult | RelayStatusResult | RelayPing) => {
-    // A ping's arrival has already done its job — reset the worker's idle timer.
+    // A ping's arrival has already done its job: it reset the worker's idle timer.
     if (msg?.type === "relay-ping") return;
     if (msg?.type === "relay-status-result") {
       pendingStatus.get(msg.id)?.(msg);
@@ -104,7 +104,7 @@ const http: ServiceHttp = async (req) => {
   });
 };
 
-/** `null` when no tab is open or it does not answer in time — ordinary states, not errors. */
+/** `null` when no tab is open or it does not answer in time: ordinary states, not errors. */
 function relayStatus(): Promise<RelayStatusResult | null> {
   const port = ports.any();
   if (!port) return Promise.resolve(null);
@@ -159,8 +159,8 @@ const engine = new Engine(
  * The once-a-minute floor, created only when it is missing.
  *
  * `chrome.alarms.create` **replaces** an alarm of the same name and restarts
- * its period, so calling it unconditionally at module scope — which runs on
- * every worker startup — pushed the next fire a full minute away each time
+ * its period, so calling it unconditionally at module scope (which runs on
+ * every worker startup) pushed the next fire a full minute away each time
  * the worker woke. A worker revived and evicted more often than that never
  * reached its own alarm, and the floor guaranteed nothing.
  */
@@ -206,7 +206,7 @@ chrome.runtime.onMessage.addListener(
  * a full interval away, and a worker revived for a single event is routinely
  * evicted before then. Without a poll on the way up, a browser that keeps
  * waking the worker for short bursts can go a long time without posting at
- * all — which reads in the host as silence from a machine that is plainly on.
+ * all, which reads in the host as silence from a machine that is plainly on.
  */
 async function bootstrap(): Promise<void> {
   await engine.loadAccountId();

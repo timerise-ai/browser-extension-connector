@@ -18,7 +18,7 @@ export class PortRegistry<P extends { postMessage(message: unknown): void }> {
     this.ports.delete(port);
   }
 
-  /** Any live port, or `null`. Insertion order — the longest-lived tab first. */
+  /** Any live port, or `null`. Insertion order: the longest-lived tab first. */
   any(): P | null {
     for (const p of this.ports) return p;
     return null;

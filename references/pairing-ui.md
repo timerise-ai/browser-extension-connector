@@ -7,13 +7,13 @@ host supplies the look (keep the ids and class names, replace the CSS).
 ## The flow
 
 ```
-type host origin ─► request permission for THAT origin ─► POST {pin} ─► list connections
-                                                                          │
-                                        POST {pin, connectionId} ◄─ choose one
-                                                                          │
-                                              save pairing ◄─ {token, connectionId, syncUrl}
-                                                                          │
-                                                     sendMessage("poll") ─► worker polls now
+type host origin -> request permission for THAT origin -> POST {pin} -> list connections
+                                                                         |
+                                       POST {pin, connectionId} <-- choose one
+                                                                         |
+                                             save pairing <-- {token, connectionId, syncUrl}
+                                                                         |
+                                                    sendMessage("poll") --> worker polls now
 ```
 
 Two steps because the host's endpoint has two: the PIN alone lists (no
@@ -27,6 +27,7 @@ origin up front ([manifest-and-permissions.md](manifest-and-permissions.md)).
 ## src/options/options.html
 
 ```html
+<!-- extension/src/options/options.html -->
 <!doctype html>
 <html lang="en">
   <head>
@@ -88,6 +89,7 @@ origin up front ([manifest-and-permissions.md](manifest-and-permissions.md)).
 ## src/options/options.ts
 
 ```ts
+// extension/src/options/options.ts
 import { loadPairings, removePairing, savePairing } from "../background/config";
 import type { Diagnosis, DiagnosisCheck } from "../shared/messages";
 import { t } from "../shared/strings";
@@ -101,14 +103,14 @@ import { t } from "../shared/strings";
  * host ever revealing which.
  *
  * The host's address is typed here, once, and the origin permission is
- * requested for **that one host** — which is why the manifest asks for no
+ * requested for **that one host**, which is why the manifest asks for no
  * host origin up front. A listing that requested every site would be both a
  * review problem and untrue.
  */
 
 /** The adapter this build pairs for. One adapter per build keeps the listing's single purpose honest. */
 const PROVIDER = "stub";
-/** Path on the host; the host may rename it — the sync URL comes back absolute anyway. */
+/** Path on the host; the host may rename it: the sync URL comes back absolute anyway. */
 const PAIR_PATH = "/api/connector/pair";
 
 type Connection = { id: string; label: string; paired: boolean };
@@ -199,7 +201,7 @@ function overall(checks: DiagnosisCheck[]): "ok" | "warn" | "fail" {
 const SUMMARY = { ok: t("summaryOk"), warn: t("summaryWarn"), fail: t("summaryFail") } as const;
 
 function when(ms: number | null): string {
-  return ms ? new Date(ms).toLocaleTimeString() : "—";
+  return ms ? new Date(ms).toLocaleTimeString() : "-";
 }
 
 /** The two directions, side by side and separately labelled: they fail independently. */
@@ -246,7 +248,7 @@ async function runDiagnosis(connectionId: string, into: HTMLElement, state: HTML
     | { ok: true; report: Diagnosis }
     | { ok: false; error: string }
     | undefined;
-  // No reply at all means the worker did not come up — itself a diagnosis.
+  // No reply at all means the worker did not come up, itself a diagnosis.
   if (!reply) return into.replaceChildren(el("p", "check-detail", t("noReply")));
   if (!reply.ok) return into.replaceChildren(el("p", "check-detail", t("testFailed", { error: reply.error })));
   const worst = overall(reply.report.checks);
@@ -268,7 +270,7 @@ async function renderPairings(): Promise<void> {
     // has to get right and cannot otherwise see from here.
     identity.append(
       el("div", "name", pairing.label),
-      el("div", "where", `${new URL(pairing.syncUrl).origin}${pairing.accountId ? ` · ${pairing.accountId}` : ""}`),
+      el("div", "where", `${new URL(pairing.syncUrl).origin}${pairing.accountId ? ` - ${pairing.accountId}` : ""}`),
     );
     // Idle until tested, and it says so: a green dot on open is a claim the
     // extension has not checked.
@@ -304,7 +306,7 @@ async function renderPairings(): Promise<void> {
         return;
       }
       await removePairing(pairing.connectionId);
-      // Local only: the host's "disconnect" revokes the token. Said plainly —
+      // Local only: the host's "disconnect" revokes the token. Said plainly,
       // a half-revoked pairing that still syncs is worse than one that visibly does not.
       await renderPairings();
       say(t("unpairedLocally"), "ok");
@@ -369,7 +371,7 @@ async function claim(origin: string, pin: string, conn: Connection): Promise<voi
     await renderPairings();
     say(t("paired", { label: conn.label }), "ok");
     // Poll now rather than at the next alarm: somebody is watching the host
-    // for the badge. Best-effort — a worker mid-restart polls on its way up.
+    // for the badge. Best-effort, a worker mid-restart polls on its way up.
     try {
       await chrome.runtime.sendMessage({ type: "poll" });
     } catch {
@@ -381,7 +383,7 @@ async function claim(origin: string, pin: string, conn: Connection): Promise<voi
 }
 
 $("fetch").addEventListener("click", () => void fetchConnections());
-// Enter in either field is the same gesture as the button — the PIN is read
+// Enter in either field is the same gesture as the button: the PIN is read
 // off another screen, and reaching for the mouse loses the digits.
 for (const id of ["host", "pin"]) {
   $(id).addEventListener("keydown", (event: KeyboardEvent) => {
@@ -415,4 +417,4 @@ void renderPairings();
 - [ ] `PROVIDER` set to the adapter's id; `PAIR_PATH` matches the host
 - [ ] `chrome.permissions.request` before the first `fetch` to the host
 - [ ] `credentials: "omit"` on every request to the host
-- [ ] All strings via `t()` — [popup-and-strings.md](popup-and-strings.md)
+- [ ] All strings via `t()`, see [popup-and-strings.md](popup-and-strings.md)

@@ -3,21 +3,22 @@ name: browser-extension-connector
 description: >
   Build a Chrome MV3 extension that acts on an external web service with no
   (or a limited) public API from inside the user's own signed-in browser
-  session — observing the site's JSON traffic, replaying its auth headers for
+  session, observing the site's JSON traffic, replaying its auth headers for
   pulls and writes, buffering offline, and syncing with a host app through one
   polled endpoint that carries records up and commands down. Use when: (1) a
   product needs data out of, or actions into, a third-party site that offers
   no API, no OAuth and no export, and server-side scraping with the user's
   password is off the table, (2) an existing connector extension needs
-  hardening — service worker dying, alarms not firing, content script shipped
-  dead, lost records, stolen commands, (3) the user mentions: browser extension
+  hardening: a service worker that dies, an alarm that never fires, a content
+  script that shipped dead, records that go missing, commands marked failed
+  without having run, (3) the user mentions: browser extension
   connector, chrome extension integration, no API, scrape from the logged-in
   session, MV3 service worker, content script MAIN world, tap fetch/XHR,
   replay auth headers, offline buffer, pairing PIN, "sync bookings from
   <site>", "publish to <site> without an API". Ships a compiled, tested
   runtime (tap, relay, worker, queue, pairing, diagnostics) and a vendor-neutral
   adapter seam; the host app's endpoints are a documented contract. Chrome MV3;
-  host-agnostic. Not a per-service adapter — those are separate skills on top.
+  host-agnostic. Not a per-service adapter; those are separate skills on top.
 ---
 
 # Browser-Extension Connector
@@ -27,7 +28,7 @@ response the site serves. This skill turns that into a connector: a Chrome
 extension that observes in the page's own context, issues requests with the
 page's own credentials, buffers what it learns, and exchanges it with a host
 app through one polled request. The hard part is not the plumbing but the
-runtime it lives in — a service worker Chrome evicts every thirty seconds,
+runtime it lives in: a service worker Chrome evicts every thirty seconds,
 content scripts that die silently, a buffer with a ceiling, and a credential
 that must never leave the tab.
 
@@ -42,21 +43,21 @@ infrastructure under any service adapter.
 
 - **The site has an API or OAuth.** Use it; this is a workaround with real costs.
 - **Server-side scraping with stored credentials.** Different threat model; not covered.
-- **A one-off data export** — a script in DevTools is cheaper than an extension.
-- **Writing a specific service's adapter** — a separate skill built on this one
+- **A one-off data export**: a script in DevTools is cheaper than an extension.
+- **Writing a specific service's adapter**: a separate skill built on this one
   ([adapter-seam.md](references/adapter-seam.md) says what it must provide).
-- **The host app's routes and schema** — described as a contract here, built in
+- **The host app's routes and schema**: described as a contract here, built in
   the host's own idiom ([server-contract.md](references/server-contract.md)).
 
 ## Architecture
 
 ```
- HOST APP                       USER'S BROWSER (MV3 extension)                          SERVICE
- pair: PIN → token ───► options page ──► storage
- sync: records up   ◄── service worker ◄── relay (ISOLATED) ◄── tap (MAIN world) ◄── page's fetch/XHR
-       commands down ──►  buffer, loop,     port + 20 s ping,     captures JSON +
-                          adapter.pull/     replays page's own    allowlisted auth
-                          adapter.execute ─► auth headers ──────────────────────────► service API
+ HOST APP                      USER'S BROWSER (MV3 extension)                        SERVICE
+ pair: PIN, then token --->  options page ---> storage
+ sync: records up      <---  service worker <--- relay (ISOLATED) <--- tap (MAIN world) <--- page's fetch/XHR
+       commands down   --->  buffer, loop,      port + 20 s ping,      captures JSON +
+                             adapter.pull/      replays the page's     allowlisted auth
+                             adapter.execute -> own auth headers -------------------------> service API
 ```
 
 One request sustains the runtime: telemetry and records up, commands and
@@ -66,11 +67,11 @@ pacing down. No inbound connection to the user's machine is needed.
 
 1. **Only MAIN-world code sees the page's responses.** An isolated content
    script has its own `fetch`. The tap runs in MAIN, has no `chrome.*`, imports
-   nothing, and must be built as a classic script — one top-level `export` and
+   nothing, and must be built as a classic script. One top-level `export` and
    it ships dead, silently.
 2. **The worker is evicted after ~30 s idle; `alarms` floor at one minute.** An
    open port does not count as activity; **traffic** on it does. The relay pings
-   every 20 s while a service tab is open. Closed browser, no sync — say so.
+   every 20 s while a service tab is open. Closed browser, no sync: say so.
 3. **The credential never leaves the tab.** Captured from the page's own
    requests, replayed only to the same origin, never stored, never posted.
 4. **The host may hand out commands on any response.** Every response is
@@ -106,19 +107,19 @@ pacing down. No inbound connection to the user's machine is needed.
 ## Quick start
 
 0. Fill the seam contract and agree record, pull and command kinds with the
-   host — [adaptation.md](references/adaptation.md).
-1. Read the shape and the credential rules — [architecture.md](references/architecture.md).
-2. Copy `assets/extension/`, set hosts and rationale —
+   host: [adaptation.md](references/adaptation.md).
+1. Read the shape and the credential rules: [architecture.md](references/architecture.md).
+2. Copy `assets/extension/`, set hosts and rationale:
    [manifest-and-permissions.md](references/manifest-and-permissions.md).
-3. Implement the host's two endpoints to the contract —
+3. Implement the host's two endpoints to the contract:
    [server-contract.md](references/server-contract.md).
-4. Write the adapter (its own skill) against the seam —
-   [adapter-seam.md](references/adapter-seam.md); point the tap config at it —
+4. Write the adapter (its own skill) against the seam:
+   [adapter-seam.md](references/adapter-seam.md), then point the tap config at it:
    [main-world-tap.md](references/main-world-tap.md).
-5. Build, test, load unpacked, pair over loopback —
+5. Build, test, load unpacked, pair over loopback:
    [build-and-package.md](references/build-and-package.md),
    [tests.md](references/tests.md), [pairing-ui.md](references/pairing-ui.md).
-6. Put the operator surface in the host before going live —
+6. Put the operator surface in the host before going live:
    [operations.md](references/operations.md).
 
 ## Reference directory
@@ -142,4 +143,4 @@ pacing down. No inbound connection to the user's machine is needed.
 | Proof | vitest, regression, fixtures | [tests.md](references/tests.md) |
 | Running it | runbook, silence, diagnostics, paused, revoked, reload | [operations.md](references/operations.md) |
 | Fitting it to a host | seam, rename, host probe, order of work | [adaptation.md](references/adaptation.md) |
-| Why the templates differ from the source | provenance, defect, kept deliberately, added | [provenance.md](references/provenance.md) |
+| Why the templates read as they do | provenance, defect, kept deliberately, added | [provenance.md](references/provenance.md) |

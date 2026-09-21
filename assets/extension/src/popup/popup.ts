@@ -4,7 +4,7 @@ import { DEFAULT_POLL_MS } from "../background/constants";
 import { t } from "../shared/strings";
 
 /**
- * The toolbar popup — the extension's front door.
+ * The toolbar popup: the extension's front door.
  *
  * Deliberately read-only. Everything that changes state lives one click away
  * in the options page, because a popup closes the moment focus moves and a
@@ -62,7 +62,7 @@ async function render(): Promise<void> {
     row.append(
       el("span", `dot ${state.state}`),
       el("span", "label", pairing.label),
-      el("span", "when", last ? new Date(last.at).toLocaleTimeString() : "—"),
+      el("span", "when", last ? new Date(last.at).toLocaleTimeString() : "-"),
     );
     box.append(row, el("p", "note", state.note));
   }

@@ -7,7 +7,7 @@ import type { Engine } from "./engine";
 /**
  * Answer "why is nothing syncing?" without anyone opening a worker console.
  *
- * Runs a **real** poll through the engine's lane — the question is whether
+ * Runs a **real** poll through the engine's lane: the question is whether
  * the channel works *now*, and replaying the last known outcome would report
  * health for a connection that broke an hour ago. It is the ordinary poll
  * minus the pull step, so it answers in seconds; and because it is the
@@ -27,7 +27,7 @@ export async function diagnose(engine: Engine, connectionId: string): Promise<Di
     return { checks, up: { queued: 0, dropped: 0, acceptedLastPost: 0, duplicatesLastPost: 0, lastPostAt: null }, down: { commandsLastPost: 0, writeSupported } };
   }
   const origin = new URL(pairing.syncUrl).origin;
-  checks.push({ id: "pairing", label: t("checkPairing"), state: "ok", detail: `"${pairing.label}" → ${origin}` });
+  checks.push({ id: "pairing", label: t("checkPairing"), state: "ok", detail: `"${pairing.label}" to ${origin}` });
 
   // 1. Does the host answer, and does it still accept this token? A human is
   // asking, so a backoff in progress does not apply.

@@ -19,6 +19,7 @@ the page loads it. The count is what tells an operator whether that held.
 ## src/background/queue.ts
 
 ```ts
+// extension/src/background/queue.ts
 import type { ConnectorRecord } from "../wire";
 import { Serial } from "../shared/serial";
 
@@ -26,15 +27,15 @@ import { Serial } from "../shared/serial";
  * The offline buffer.
  *
  * A machine loses its network, gets closed at 18:00, or the host is
- * mid-deploy. Records observed in the meantime wait in `chrome.storage.local`
- * — about 10 MB, and deliberately not raised: `unlimitedStorage` is a
+ * mid-deploy. Records observed in the meantime wait in `chrome.storage.local`,
+ * about 10 MB and deliberately not raised: `unlimitedStorage` is a
  * permission we do not want on the listing, and an unbounded queue is not a
  * safer place to lose data, only a quieter one.
  *
  * So the queue is **bounded and loud**. When full it drops the oldest and
  * counts the drop, and that count rides every post to the host. An install
  * quietly discarding a third of someone's data must not look identical to a
- * healthy one — which is exactly what it would look like if the drop were silent.
+ * healthy one, which is exactly what it would look like if the drop were silent.
  *
  * Nothing is lost by dropping, in the ordinary case: a host-directed pull is
  * cursor-driven from the host and simply re-fetches, and a live record is
@@ -43,7 +44,7 @@ import { Serial } from "../shared/serial";
  *
  * Every mutation runs through one `Serial` (storage has no transactions; the
  * tap fires several pushes at once while the loop acks a batch). The buffer is
- * held in memory once read — only this worker touches these keys — and a write
+ * held in memory once read (only this worker touches these keys) and a write
  * that fails (quota, mostly) discards the copy so the next read starts from
  * what storage actually holds.
  */
@@ -56,11 +57,11 @@ export const MAX_QUEUE_ITEMS = 2_000;
 
 export type QueuedRecord = ConnectorRecord & {
   queuedAt: number;
-  /** The account the record was observed under, when known — see `routing.ts`. */
+  /** The account the record was observed under, when known. See `routing.ts`. */
   accountId?: string | null;
 };
 
-/** The slice of `chrome.storage.local` this module needs — injectable for tests. */
+/** The slice of `chrome.storage.local` this module needs, injectable for tests. */
 export type Store = {
   get<T>(key: string): Promise<T | undefined>;
   set(key: string, value: unknown): Promise<void>;
@@ -145,7 +146,7 @@ export class RecordQueue {
 
   /**
    * The next batch to post, oldest first. Does not remove anything. `accept`
-   * narrows the batch to the records one connection may carry — in a browser
+   * narrows the batch to the records one connection may carry, in a browser
    * paired twice, the other connection's records are skipped over, not consumed.
    */
   async peek(limit: number, accept: (record: QueuedRecord) => boolean = () => true): Promise<QueuedRecord[]> {
@@ -182,7 +183,7 @@ export class RecordQueue {
   }
 
   /**
-   * Discard records nobody will ever post — those observed under an account no
+   * Discard records nobody will ever post: those observed under an account no
    * pairing in this browser is bound to. Not counted as dropped: they were
    * never this connection's to send.
    */
@@ -223,11 +224,12 @@ de-duplicates again on content, and that is the guarantee.
 ## src/shared/serial.ts
 
 ```ts
+// extension/src/shared/serial.ts
 /**
  * A one-lane queue for async work.
  *
  * `chrome.storage.local` has no transactions, so every "read, change, write
- * back" races every other one — and the tap fires several at once each time
+ * back" races every other one, and the tap fires several at once each time
  * the page loads a screen, while the sync loop is acknowledging a batch. Two
  * overlapping read-modify-writes keep whichever finished last and silently
  * lose the other's records. For a tapped record that is a delay (it is
@@ -259,26 +261,27 @@ export class Serial {
 }
 ```
 
-The chain must never reject, or every later task is skipped — hence the
+The chain must never reject, or every later task is skipped. Hence the
 `.catch(() => undefined)` on the tail while the caller still gets the
 rejection.
 
 ## src/background/routing.ts
 
 ```ts
+// extension/src/background/routing.ts
 /**
  * Which connection a queued record belongs to.
  *
- * One browser may be paired with several connections — two accounts on one
- * service, or two services — and they share one offline buffer, because the
+ * One browser may be paired with several connections (two accounts on one
+ * service, or two services) and they share one offline buffer, because the
  * tap that fills it does not know who is paired. Without this the loop handed
  * each connection the next slice of the buffer, so two accounts' records were
  * dealt out between their connections more or less at random.
  *
  * The rule is the account id. Every record is tagged with the account it was
- * observed under, every pairing is bound to one account — by the host, which
- * learned it from this extension's first post and hands it back on every poll
- * — and a record goes only to the pairing bound to its account.
+ * observed under, and every pairing is bound to one account by the host, which
+ * learned it from this extension's first post and hands it back on every poll.
+ * A record goes only to the pairing bound to its account.
  *
  * Two edges, both deliberate: a pairing the host has not bound yet routes as
  * whatever the page currently shows (pairing while looking at the right account
@@ -310,7 +313,7 @@ export function accepts(
 /**
  * Whether a record can never be posted from this browser: tagged with an
  * account no pairing is bound to, once every pairing *is* bound. While any
- * pairing is still unbound the record is kept — that pairing may yet bind to
+ * pairing is still unbound the record is kept: that pairing may yet bind to
  * exactly this account on its first post.
  */
 export function orphaned(
@@ -347,7 +350,7 @@ the one-connection case is the only one.
 | `connector.dropped` | number | queue |
 | `connector.accountId` | string | engine |
 
-Nothing else is stored. In particular, no service credential — ever.
+Nothing else is stored. In particular, no service credential, ever.
 
 ## Checklist
 

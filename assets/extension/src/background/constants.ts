@@ -1,6 +1,6 @@
 /**
  * Constants the service worker shares with its tests. Split out of `index.ts`
- * because that module installs listeners and starts a timer at import time —
+ * because that module installs listeners and starts a timer at import time,
  * importing it from a test would boot the extension.
  */
 

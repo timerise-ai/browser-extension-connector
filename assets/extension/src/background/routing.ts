@@ -1,16 +1,16 @@
 /**
  * Which connection a queued record belongs to.
  *
- * One browser may be paired with several connections — two accounts on one
- * service, or two services — and they share one offline buffer, because the
+ * One browser may be paired with several connections (two accounts on one
+ * service, or two services) and they share one offline buffer, because the
  * tap that fills it does not know who is paired. Without this the loop handed
  * each connection the next slice of the buffer, so two accounts' records were
  * dealt out between their connections more or less at random.
  *
  * The rule is the account id. Every record is tagged with the account it was
- * observed under, every pairing is bound to one account — by the host, which
- * learned it from this extension's first post and hands it back on every poll
- * — and a record goes only to the pairing bound to its account.
+ * observed under, and every pairing is bound to one account by the host, which
+ * learned it from this extension's first post and hands it back on every poll.
+ * A record goes only to the pairing bound to its account.
  *
  * Two edges, both deliberate: a pairing the host has not bound yet routes as
  * whatever the page currently shows (pairing while looking at the right account
@@ -42,7 +42,7 @@ export function accepts(
 /**
  * Whether a record can never be posted from this browser: tagged with an
  * account no pairing is bound to, once every pairing *is* bound. While any
- * pairing is still unbound the record is kept — that pairing may yet bind to
+ * pairing is still unbound the record is kept: that pairing may yet bind to
  * exactly this account on its first post.
  */
 export function orphaned(

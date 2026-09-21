@@ -11,9 +11,9 @@ import { fileURLToPath } from "node:url";
  * no download in production is exactly the failure this module is prone to.
  *
  * The output is **deterministic** (sorted entries, fixed 1980 timestamps), so
- * a rebuild of unchanged sources yields byte-identical bytes — diffable,
+ * a rebuild of unchanged sources yields byte-identical bytes, diffable,
  * cacheable, checksummable. Runs after `build.mjs`; wire both ahead of the
- * host's build so the zip can never describe a build older than the source.
+ * host's build, so the zip can never describe a build older than the files it packs.
  * `EXTENSION_ZIP_OUT` overrides the destination.
  */
 const root = dirname(fileURLToPath(import.meta.url));
@@ -48,7 +48,7 @@ const files = walk(dist);
 if (!files.some((f) => f.name === "manifest.json")) {
   // Chrome reads the manifest from the archive root; a zip without one
   // installs as nothing and says little about why.
-  throw new Error("dist has no manifest.json — run `node build.mjs` first");
+  throw new Error("dist has no manifest.json: run `node build.mjs` first");
 }
 
 // 1980-01-01 00:00, the zero point of the DOS timestamp fields.
@@ -121,4 +121,4 @@ const zip = Buffer.concat([...locals, cd, eocd]);
 writeFileSync(out, zip);
 
 const version = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version;
-console.log(`extension packaged → ${out} (v${version}, ${files.length} files, ${zip.length} B)`);
+console.log(`extension packaged to ${out} (v${version}, ${files.length} files, ${zip.length} B)`);

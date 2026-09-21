@@ -4,7 +4,7 @@
  * Hand-written rather than `@types/chrome`, for two reasons. The build stays
  * dependency-free; and a hand-written surface is a **list of what we touch**,
  * which is exactly the review question the Web Store asks. Adding an API here
- * is a visible diff — the same property `PERMISSIONS.md` is trying to preserve.
+ * is a visible diff, the same property `PERMISSIONS.md` is trying to preserve.
  * Swap for `@types/chrome` if your host already has it; nothing below conflicts.
  */
 declare namespace chrome {
@@ -51,7 +51,7 @@ declare namespace chrome {
   }
 
   /**
-   * `tabs.create` only — opening a URL needs no `tabs` permission, and none is
+   * `tabs.create` only: opening a URL needs no `tabs` permission, and none is
    * requested. Nothing here reads, lists or inspects the user's tabs.
    */
   namespace tabs {

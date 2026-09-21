@@ -7,15 +7,15 @@ import { fileURLToPath } from "node:url";
  * Extension build. Five independent bundles, because MV3 loads them in
  * different contexts and they may not share a module graph:
  *
- *   background  service worker   — the sync loop; no DOM
- *   content     isolated world   — relays taps; sees `chrome.*`, not the page
- *   inject      MAIN world       — sees the page's `fetch`; NO `chrome.*` at all
- *   options     extension page   — pairing and diagnostics
- *   popup       extension page   — read-only status
+ *   background  service worker   the sync loop; no DOM
+ *   content     isolated world   relays taps; sees `chrome.*`, not the page
+ *   inject      MAIN world       sees the page's `fetch`; NO `chrome.*` at all
+ *   options     extension page   pairing and diagnostics
+ *   popup       extension page   read-only status
  *
  * `inject` must never import from the others: a stray `chrome.runtime`
  * reference in MAIN-world code throws on the page and takes the tap down
- * silently. Its two inputs — the capture pattern and the header allowlist —
+ * silently. Its two inputs, the capture pattern and the header allowlist,
  * are read from the adapter here and injected as defines.
  *
  * Bundled, not transpiled-in-place: MV3 has no bare-specifier resolution, so
@@ -63,7 +63,7 @@ const common = {
 
 /**
  * Format is per target, and getting it wrong is silent. Content scripts are
- * loaded as **classic scripts** — there is no way to ask Chrome for a module —
+ * loaded as **classic scripts** (there is no way to ask Chrome for a module),
  * so a single top-level `export` in the bundle is a `SyntaxError` and the
  * whole file never runs. Nothing logs it where anyone looks. `iife` also keeps
  * the tap's own bindings out of the page it is injected into. The others are
@@ -89,4 +89,4 @@ writeFileSync(join(out, "manifest.json"), JSON.stringify(manifest, null, 2));
 copyFileSync(join(root, "src/options/options.html"), join(out, "options.html"));
 copyFileSync(join(root, "src/popup/popup.html"), join(out, "popup.html"));
 
-console.log(`extension built → ${out}`);
+console.log(`extension built to ${out}`);

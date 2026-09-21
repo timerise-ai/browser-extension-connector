@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Connector — <host app> ↔ <service>",
+  "name": "Connector: <host app> and <service>",
   "version": "0.0.0",
   "description": "Syncs your own <service> data with <host app>, from the session you are already signed in to. No password is ever stored or sent.",
   "minimum_chrome_version": "120",

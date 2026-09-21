@@ -1,11 +1,11 @@
 /**
  * The contract between the extension and the host app.
  *
- * The host owns the authoritative copy (with its validator — see
+ * The host owns the authoritative copy (with its validator, see
  * `server-contract.md`); the extension imports these as **types only**, so no
- * validation library ever reaches the service worker. Two copies drift silently
- * — a renamed field simply stops arriving — so keep this file byte-identical on
- * both sides, or have the host publish it and import from there.
+ * validation library ever reaches the service worker. Two copies drift
+ * silently, because a renamed field simply stops arriving, so keep this file
+ * byte-identical on both sides, or have the host publish it and import from there.
  *
  * Nothing here names a service. The extension normalises; the host stays
  * service-agnostic. A service changing how it serves data is an extension
@@ -15,7 +15,7 @@
 /** A record kind is whatever the host defines; the runtime treats it as a string. */
 export type ConnectorRecord<K extends string = string> = {
   kind: K;
-  /** The service's own id for this thing — numeric, slug, anything. ≤128 chars. */
+  /** The service's own id for this thing: numeric, slug or anything, 128 characters at most. */
   externalId: string;
   /** The service's change marker, when it exposes one. Ordering only, never identity. */
   externalUpdatedAt?: string | null;
@@ -27,7 +27,7 @@ export type ConnectorRecord<K extends string = string> = {
 
 /**
  * Batch size cap. A browser offline over a weekend must not be able to post one
- * request the host cannot finish — it pages instead, and the buffer makes that free.
+ * request the host cannot finish: it pages instead, and the buffer makes that free.
  */
 export const MAX_RECORDS_PER_BATCH = 200;
 
@@ -37,7 +37,7 @@ export type SyncRequest = {
   agentVersion?: string;
   /** Stable for one batch across retries, so a re-post is recognisable in the host's log. */
   batchId: string;
-  /** Validated **record by record** by the host — see `server-contract.md`. */
+  /** Validated **record by record** by the host, see `server-contract.md`. */
   records: ConnectorRecord[];
   /** The account the service showed the extension, learned from the page. */
   externalAccountId?: string | null;
@@ -60,14 +60,14 @@ export type SyncRequest = {
    * field means "no opinion". Never a credential; capped at 500 chars.
    */
   error?: string | null;
-  /** Results of the commands handed out on a previous poll. ≤50. */
+  /** Results of the commands handed out on a previous poll, 50 at most. */
   ack?: Ack[];
 };
 
 export type Ack = {
   id: string;
   ok: boolean;
-  /** The id the service assigned — the only key a later delete may address. */
+  /** The id the service assigned: the only key a later delete may address. */
   externalRef?: string | null;
   error?: string | null;
 };
@@ -83,7 +83,7 @@ export type Command = {
   externalRef: string | null;
 };
 
-/** What the host answers. Every response may carry commands — run them all. */
+/** What the host answers. Every response may carry commands: run them all. */
 export type SyncResponse = {
   accepted: number;
   duplicates: number;
@@ -94,7 +94,7 @@ export type SyncResponse = {
   enabled: boolean;
   commands: Command[];
   directives: {
-    /** Milliseconds until the next poll — the host paces the client. */
+    /** Milliseconds until the next poll: the host paces the client. */
     pollMs: number;
     /** Present while the host wants a pull to continue; absent or null means stop. */
     pull?: { kind: string; cursor: unknown; pageSize: number } | null;

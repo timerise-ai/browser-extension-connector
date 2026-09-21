@@ -6,6 +6,7 @@ paired.
 ## src/background/client.ts
 
 ```ts
+// extension/src/background/client.ts
 import type { SyncRequest, SyncResponse } from "../wire";
 import type { Pairing } from "./config";
 
@@ -27,8 +28,8 @@ export class UnauthorizedError extends Error {
 
 /**
  * How long one post may take before it is given up on. Without a ceiling a
- * request that never completes — a proxy that swallows the connection, a
- * laptop that slept mid-POST — held the loop's in-flight guard until Chrome
+ * request that never completes (a proxy that swallows the connection, a
+ * laptop that slept mid-POST) held the loop's in-flight guard until Chrome
  * happened to evict the worker.
  */
 const REQUEST_TIMEOUT_MS = 25_000;
@@ -144,9 +145,10 @@ a third party if that host were wrong.
 ## src/background/config.ts
 
 ```ts
+// extension/src/background/config.ts
 /**
  * What the extension knows about where it is paired. Lives in
- * `chrome.storage.local`, which is per profile and per install — exactly the
+ * `chrome.storage.local`, which is per profile and per install, exactly the
  * scope a pairing has.
  *
  * A list, not a single record: one browser may carry several connections (two
@@ -154,7 +156,7 @@ a third party if that host were wrong.
  */
 
 export type Pairing = {
-  /** Absolute, from the pair response — the extension never composes it. */
+  /** Absolute, from the pair response: the extension never composes it. */
   syncUrl: string;
   token: string;
   connectionId: string;
@@ -186,7 +188,7 @@ export async function loadPairings(): Promise<Pairing[]> {
 export async function savePairing(pairing: Pairing): Promise<void> {
   const existing = await loadPairings();
   // Re-pairing the same connection replaces its token rather than adding a
-  // second entry — otherwise a re-paired browser posts twice per poll with one
+  // second entry. Otherwise a re-paired browser posts twice per poll with one
   // dead credential, and the host shows an error that fixes itself and returns.
   const next = [...existing.filter((p) => p.connectionId !== pairing.connectionId), pairing];
   await chrome.storage.local.set({ [KEY]: next });
@@ -210,11 +212,11 @@ export async function bindPairing(connectionId: string, accountId: string): Prom
  * The outcome of the most recent post, per connection.
  *
  * In storage rather than in the worker, for two reasons. The popup and the
- * options page read it, and neither may import the worker module — it installs
+ * options page read it, and neither may import the worker module: it installs
  * listeners and starts a timer at import time, so reading a number out of it
  * would boot a second copy of the extension inside the page asking. And the
  * worker is evicted between polls, so anything held in memory is gone by the
- * time somebody opens a window to look — and an empty screen reads as
+ * time somebody opens a window to look, and an empty screen reads as
  * "nothing has ever happened" rather than "I forgot".
  */
 export type LastPost = {

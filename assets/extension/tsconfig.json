@@ -7,8 +7,7 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["node"],
-    "baseUrl": "."
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "chrome.d.ts"]
 }

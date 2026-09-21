@@ -4,7 +4,7 @@
  * nobody is watching.
  *
  * Note what is absent: no headers. The worker never names a credential, and
- * the relay attaches the page's own auth headers itself — so there is no field
+ * the relay attaches the page's own auth headers itself, so there is no field
  * here through which one could travel.
  */
 
@@ -52,7 +52,7 @@ export type RelayStatusResult = {
 /**
  * A heartbeat from the relay, every twenty seconds while its port is open.
  * Carries nothing; its arrival is the point. An MV3 service worker is evicted
- * after 30 s without an *event*, and a port that is merely open is not one —
+ * after 30 s without an *event*, and a port that is merely open is not one,
  * only traffic on it resets the timer.
  */
 export type RelayPing = { type: "relay-ping" };
@@ -70,7 +70,7 @@ export type DiagnosisCheck = {
    * `warn` is "works, but not the way you probably expect"; `fail` is "this is
    * why nothing is happening"; `info` is a fact about how the product is built
    * or a state that passes on its own, and does **not** count toward the
-   * summary — otherwise no healthy install can ever summarise as "working".
+   * summary, otherwise no healthy install can ever summarise as "working".
    */
   state: "ok" | "info" | "warn" | "fail";
   detail: string;

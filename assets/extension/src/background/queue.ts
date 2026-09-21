@@ -5,15 +5,15 @@ import { Serial } from "../shared/serial";
  * The offline buffer.
  *
  * A machine loses its network, gets closed at 18:00, or the host is
- * mid-deploy. Records observed in the meantime wait in `chrome.storage.local`
- * — about 10 MB, and deliberately not raised: `unlimitedStorage` is a
+ * mid-deploy. Records observed in the meantime wait in `chrome.storage.local`,
+ * about 10 MB and deliberately not raised: `unlimitedStorage` is a
  * permission we do not want on the listing, and an unbounded queue is not a
  * safer place to lose data, only a quieter one.
  *
  * So the queue is **bounded and loud**. When full it drops the oldest and
  * counts the drop, and that count rides every post to the host. An install
  * quietly discarding a third of someone's data must not look identical to a
- * healthy one — which is exactly what it would look like if the drop were silent.
+ * healthy one, which is exactly what it would look like if the drop were silent.
  *
  * Nothing is lost by dropping, in the ordinary case: a host-directed pull is
  * cursor-driven from the host and simply re-fetches, and a live record is
@@ -22,7 +22,7 @@ import { Serial } from "../shared/serial";
  *
  * Every mutation runs through one `Serial` (storage has no transactions; the
  * tap fires several pushes at once while the loop acks a batch). The buffer is
- * held in memory once read — only this worker touches these keys — and a write
+ * held in memory once read (only this worker touches these keys) and a write
  * that fails (quota, mostly) discards the copy so the next read starts from
  * what storage actually holds.
  */
@@ -35,11 +35,11 @@ export const MAX_QUEUE_ITEMS = 2_000;
 
 export type QueuedRecord = ConnectorRecord & {
   queuedAt: number;
-  /** The account the record was observed under, when known — see `routing.ts`. */
+  /** The account the record was observed under, when known. See `routing.ts`. */
   accountId?: string | null;
 };
 
-/** The slice of `chrome.storage.local` this module needs — injectable for tests. */
+/** The slice of `chrome.storage.local` this module needs, injectable for tests. */
 export type Store = {
   get<T>(key: string): Promise<T | undefined>;
   set(key: string, value: unknown): Promise<void>;
@@ -124,7 +124,7 @@ export class RecordQueue {
 
   /**
    * The next batch to post, oldest first. Does not remove anything. `accept`
-   * narrows the batch to the records one connection may carry — in a browser
+   * narrows the batch to the records one connection may carry, in a browser
    * paired twice, the other connection's records are skipped over, not consumed.
    */
   async peek(limit: number, accept: (record: QueuedRecord) => boolean = () => true): Promise<QueuedRecord[]> {
@@ -161,7 +161,7 @@ export class RecordQueue {
   }
 
   /**
-   * Discard records nobody will ever post — those observed under an account no
+   * Discard records nobody will ever post: those observed under an account no
    * pairing in this browser is bound to. Not counted as dropped: they were
    * never this connection's to send.
    */

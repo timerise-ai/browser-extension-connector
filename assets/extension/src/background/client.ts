@@ -19,8 +19,8 @@ export class UnauthorizedError extends Error {
 
 /**
  * How long one post may take before it is given up on. Without a ceiling a
- * request that never completes — a proxy that swallows the connection, a
- * laptop that slept mid-POST — held the loop's in-flight guard until Chrome
+ * request that never completes (a proxy that swallows the connection, a
+ * laptop that slept mid-POST) held the loop's in-flight guard until Chrome
  * happened to evict the worker.
  */
 const REQUEST_TIMEOUT_MS = 25_000;

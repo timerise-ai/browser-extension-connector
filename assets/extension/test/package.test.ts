@@ -61,7 +61,7 @@ describe("extension zip", () => {
     const parsed = JSON.parse(manifest!.toString("utf8"));
     expect(parsed.manifest_version).toBe(3);
     expect(parsed.version).toBe(JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version);
-    // Every file the manifest names must be in the archive — a missing
+    // Every file the manifest names must be in the archive, a missing
     // service worker is an extension that installs and then does nothing.
     const named = [
       parsed.background.service_worker,

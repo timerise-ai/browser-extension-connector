@@ -1,7 +1,7 @@
 /**
  * Isolated-world relay: the only bridge between the page and the extension.
  *
- * Three jobs, and deliberately no logic beyond them — anything smarter belongs
+ * Three jobs, and deliberately no logic beyond them: anything smarter belongs
  * in the service worker, which is testable and survives a navigation.
  *
  *  1. Forward tapped responses from the MAIN world to the worker.
@@ -9,8 +9,8 @@
  *     evicted ~30 s after its last event and a merely-open port is not an
  *     event; traffic on it is. This is what lets the loop run at the host's
  *     cadence while a service tab is open.
- *  3. Perform the requests the worker needs made against the service — pulls
- *     and commands — authenticated exactly as the page authenticates itself.
+ *  3. Perform the requests the worker needs made against the service (pulls
+ *     and commands), authenticated exactly as the page authenticates itself.
  *
  * The rules that keep a live credential in memory defensible: read only from
  * requests the page itself made; replayed only to the origin it was captured
@@ -30,7 +30,7 @@ import { t } from "../shared/strings";
 /** Mirrors of the two channel names in `inject/net-tap.ts`. Change one, change both. */
 const TAP_MESSAGE = "connector-tap";
 const AUTH_MESSAGE = "connector-auth";
-/** Mirrors `background/constants.ts` — imported here would be fine, but kept literal for symmetry with the tap. */
+/** Mirrors `background/constants.ts`; importing it would be fine, but it is kept literal for symmetry with the tap. */
 const PORT_NAME = "connector-keepalive";
 
 let port: chrome.runtime.Port | null = null;
@@ -64,7 +64,7 @@ function connect(): void {
   keepalive = setInterval(() => post({ type: "relay-ping" } satisfies RelayPing), KEEPALIVE_MS);
 
   // A disconnect means the worker was replaced (an update, a crash). Reconnect
-  // rather than going quiet — quiet looks exactly like healthy with no data.
+  // rather than going quiet: quiet looks exactly like healthy with no data.
   port.onDisconnect.addListener(() => {
     port = null;
     if (keepalive) clearInterval(keepalive);
@@ -117,7 +117,7 @@ async function performFetch(msg: RelayFetchRequest): Promise<RelayFetchResult> {
       // No cookies: header-authenticated APIs do not use them, and sending
       // ambient credentials where they are not needed only widens what the
       // request carries. If your service is cookie-authenticated, this is the
-      // one line to change — and then the header allowlist may be empty.
+      // one line to change, and then the header allowlist may be empty.
       credentials: "omit",
       headers: {
         Accept: "application/json",
@@ -171,7 +171,7 @@ window.addEventListener("message", (event) => {
       });
     } catch (err) {
       // `sendMessage` throws **synchronously** on an invalidated context, so
-      // the `.catch` above never gets attached — not a duplicate of it.
+      // the `.catch` above never gets attached; this is not a duplicate of it.
       if (isContextInvalidated(err)) orphaned = true;
     }
   }

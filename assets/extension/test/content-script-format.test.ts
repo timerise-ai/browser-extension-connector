@@ -26,8 +26,8 @@ describe("built bundle formats", () => {
   it.each(CONTENT_SCRIPTS)("%s is a classic script Chrome can evaluate", (name) => {
     const code = read(name);
     // Multiline: esbuild emits these at the start of a line.
-    expect(code, `${name} has a top-level export — Chrome will refuse the whole file`).not.toMatch(/^export[\s{]/m);
-    expect(code, `${name} has a top-level import — same failure`).not.toMatch(/^import[\s{("']/m);
+    expect(code, `${name} has a top-level export, Chrome will refuse the whole file`).not.toMatch(/^export[\s{]/m);
+    expect(code, `${name} has a top-level import, same failure`).not.toMatch(/^import[\s{("']/m);
   });
 
   it.each(MODULES)("%s is left as a module", (name) => {

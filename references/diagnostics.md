@@ -8,7 +8,7 @@ opening a service-worker console.
 The question is whether the channel works *now*. Replaying the last known
 outcome would report health for a connection that broke an hour ago. So the
 screen runs the ordinary poll through the engine's lane, minus the pull step,
-so it answers in seconds — and because it is the ordinary poll, the commands
+so it answers in seconds, and because it is the ordinary poll, the commands
 the host hands it are **run**. An earlier version posted an empty batch,
 received the leased commands and dropped them, so every press of the button
 delayed a pending pull by one lease. A human pressing the button also clears
@@ -17,6 +17,7 @@ the connection's backoff: they are owed an answer now.
 ## src/background/diagnostics.ts
 
 ```ts
+// extension/src/background/diagnostics.ts
 import type { SyncResponse } from "../wire";
 import type { Diagnosis, DiagnosisCheck } from "../shared/messages";
 import { t } from "../shared/strings";
@@ -26,7 +27,7 @@ import type { Engine } from "./engine";
 /**
  * Answer "why is nothing syncing?" without anyone opening a worker console.
  *
- * Runs a **real** poll through the engine's lane — the question is whether
+ * Runs a **real** poll through the engine's lane: the question is whether
  * the channel works *now*, and replaying the last known outcome would report
  * health for a connection that broke an hour ago. It is the ordinary poll
  * minus the pull step, so it answers in seconds; and because it is the
@@ -46,7 +47,7 @@ export async function diagnose(engine: Engine, connectionId: string): Promise<Di
     return { checks, up: { queued: 0, dropped: 0, acceptedLastPost: 0, duplicatesLastPost: 0, lastPostAt: null }, down: { commandsLastPost: 0, writeSupported } };
   }
   const origin = new URL(pairing.syncUrl).origin;
-  checks.push({ id: "pairing", label: t("checkPairing"), state: "ok", detail: `"${pairing.label}" → ${origin}` });
+  checks.push({ id: "pairing", label: t("checkPairing"), state: "ok", detail: `"${pairing.label}" to ${origin}` });
 
   // 1. Does the host answer, and does it still accept this token? A human is
   // asking, so a backoff in progress does not apply.
@@ -142,9 +143,9 @@ fix.
 |---|---|---|---|---|
 | 0 | Pairing | not paired in this browser | | |
 | 1 | Host app | no answer, or 401 (revoked) | | |
-| 2 | Connection enabled | paused in the host — the single most common "paired but nothing happens" | | |
+| 2 | Connection enabled | paused in the host: the single most common "paired but nothing happens" | | |
 | 3 | Service tab | | no tab open: observation works, pulls and commands do not | |
-| 4 | Service session | tab open, no authenticated request seen — tap dead, or not signed in | | |
+| 4 | Service session | tab open, no authenticated request seen: the tap is dead, or nobody is signed in | | |
 | 5 | Recognised account | none seen yet | bound to one account, tab shows another | |
 | 6 | Offline buffer | | records dropped since last report | |
 | 7 | Writes | | | product-wide: adapter's write path unverified |
@@ -153,19 +154,19 @@ Two states that are not faults and must not read as such: `info` never sets
 the summary (while it did, every healthy install summarised as "working with
 caveats" and the one word meant to answer "is it working?" never said yes);
 and a fresh pairing whose first pull has not landed is "in progress", not a
-warning — flagging it tells every new user their install has a problem on the
-day they set it up.
+warning, because flagging it tells every new user their install has a problem
+on the day they set it up.
 
 ## The two directions, separately
 
 The report splits "up" (records to the host) from "down" (commands to the
 service) because they fail independently: records can flow perfectly while
 the command path is dead, and one combined "synced" indicator would be a lie
-half the time. The down box says outright when writing is switched off — a
-state somebody would otherwise discover by waiting.
+half the time. The down box says outright when writing is switched off, a state
+somebody would otherwise discover by waiting.
 
 The numbers under "up" are the poll's own: what it carried and what the host
-handed down. Label them "last post", not "this test" — the test posts the
+handed down. Label them "last post", not "this test": the test posts the
 buffer as it stands, and calling its zeros "the result of the test" invites
 the reading that the test moved nothing.
 
@@ -174,4 +175,4 @@ the reading that the test moved nothing.
 - [ ] Runs `syncOne(pairing, { pull: false })` through the lane
 - [ ] Clears `notBefore` first
 - [ ] Pipeline order; `info` excluded from the summary
-- [ ] Never reports a credential — only presence and origin
+- [ ] Never reports a credential, only presence and origin

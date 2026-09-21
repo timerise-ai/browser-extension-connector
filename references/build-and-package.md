@@ -14,11 +14,12 @@ extension/
   dist/          (built)      release/connector-extension.zip (packed)
 ```
 
-Wire into the host's scripts — the pack step runs **before** the host's own
-build so the zip can never describe a build older than the source, and an
+Wire into the host's scripts. The pack step runs **before** the host's own
+build, so the zip can never describe a build older than the files it packs, and an
 artefact in git would drift silently:
 
 ```json
+// package.json (the host repo), scripts
 "ext:build": "node extension/build.mjs",
 "ext:package": "node extension/build.mjs && node extension/package.mjs",
 "ext:typecheck": "tsc --noEmit -p extension/tsconfig.json",
@@ -28,6 +29,7 @@ artefact in git would drift silently:
 ## build.mjs
 
 ```js
+// extension/build.mjs
 import { build } from "esbuild";
 import { mkdirSync, copyFileSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -37,15 +39,15 @@ import { fileURLToPath } from "node:url";
  * Extension build. Five independent bundles, because MV3 loads them in
  * different contexts and they may not share a module graph:
  *
- *   background  service worker   — the sync loop; no DOM
- *   content     isolated world   — relays taps; sees `chrome.*`, not the page
- *   inject      MAIN world       — sees the page's `fetch`; NO `chrome.*` at all
- *   options     extension page   — pairing and diagnostics
- *   popup       extension page   — read-only status
+ *   background  service worker   the sync loop; no DOM
+ *   content     isolated world   relays taps; sees `chrome.*`, not the page
+ *   inject      MAIN world       sees the page's `fetch`; NO `chrome.*` at all
+ *   options     extension page   pairing and diagnostics
+ *   popup       extension page   read-only status
  *
  * `inject` must never import from the others: a stray `chrome.runtime`
  * reference in MAIN-world code throws on the page and takes the tap down
- * silently. Its two inputs — the capture pattern and the header allowlist —
+ * silently. Its two inputs, the capture pattern and the header allowlist,
  * are read from the adapter here and injected as defines.
  *
  * Bundled, not transpiled-in-place: MV3 has no bare-specifier resolution, so
@@ -93,7 +95,7 @@ const common = {
 
 /**
  * Format is per target, and getting it wrong is silent. Content scripts are
- * loaded as **classic scripts** — there is no way to ask Chrome for a module —
+ * loaded as **classic scripts** (there is no way to ask Chrome for a module),
  * so a single top-level `export` in the bundle is a `SyntaxError` and the
  * whole file never runs. Nothing logs it where anyone looks. `iife` also keeps
  * the tap's own bindings out of the page it is injected into. The others are
@@ -119,11 +121,11 @@ writeFileSync(join(out, "manifest.json"), JSON.stringify(manifest, null, 2));
 copyFileSync(join(root, "src/options/options.html"), join(out, "options.html"));
 copyFileSync(join(root, "src/popup/popup.html"), join(out, "popup.html"));
 
-console.log(`extension built → ${out}`);
+console.log(`extension built to ${out}`);
 ```
 
 Format is per target and getting it wrong is silent. Content scripts are
-loaded as classic scripts — there is no way to ask Chrome for a module — so
+loaded as classic scripts (there is no way to ask Chrome for a module), so
 `iife` for `content.js` and `net-tap.js`, `esm` for the worker (declared
 `"type": "module"`) and the two pages (`<script type="module">`). The tap's
 config is read from the adapter by bundling `tap-config.ts` in memory and
@@ -132,6 +134,7 @@ importing it as a data URL, so the tap bundle itself keeps zero imports.
 ## package.mjs
 
 ```js
+// extension/package.mjs
 import { deflateRawSync } from "node:zlib";
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
@@ -145,9 +148,9 @@ import { fileURLToPath } from "node:url";
  * no download in production is exactly the failure this module is prone to.
  *
  * The output is **deterministic** (sorted entries, fixed 1980 timestamps), so
- * a rebuild of unchanged sources yields byte-identical bytes — diffable,
+ * a rebuild of unchanged sources yields byte-identical bytes, diffable,
  * cacheable, checksummable. Runs after `build.mjs`; wire both ahead of the
- * host's build so the zip can never describe a build older than the source.
+ * host's build, so the zip can never describe a build older than the files it packs.
  * `EXTENSION_ZIP_OUT` overrides the destination.
  */
 const root = dirname(fileURLToPath(import.meta.url));
@@ -182,7 +185,7 @@ const files = walk(dist);
 if (!files.some((f) => f.name === "manifest.json")) {
   // Chrome reads the manifest from the archive root; a zip without one
   // installs as nothing and says little about why.
-  throw new Error("dist has no manifest.json — run `node build.mjs` first");
+  throw new Error("dist has no manifest.json: run `node build.mjs` first");
 }
 
 // 1980-01-01 00:00, the zero point of the DOS timestamp fields.
@@ -255,7 +258,7 @@ const zip = Buffer.concat([...locals, cd, eocd]);
 writeFileSync(out, zip);
 
 const version = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version;
-console.log(`extension packaged → ${out} (v${version}, ${files.length} files, ${zip.length} B)`);
+console.log(`extension packaged to ${out} (v${version}, ${files.length} files, ${zip.length} B)`);
 ```
 
 Hand-rolled because the `zip` binary is not on every build image, and a step
@@ -266,13 +269,14 @@ it deterministic: unchanged sources yield identical bytes.
 ## chrome.d.ts
 
 ```ts
+// extension/chrome.d.ts
 /**
  * The slice of the MV3 API this extension actually uses.
  *
  * Hand-written rather than `@types/chrome`, for two reasons. The build stays
  * dependency-free; and a hand-written surface is a **list of what we touch**,
  * which is exactly the review question the Web Store asks. Adding an API here
- * is a visible diff — the same property `PERMISSIONS.md` is trying to preserve.
+ * is a visible diff, the same property `PERMISSIONS.md` is trying to preserve.
  * Swap for `@types/chrome` if your host already has it; nothing below conflicts.
  */
 declare namespace chrome {
@@ -319,7 +323,7 @@ declare namespace chrome {
   }
 
   /**
-   * `tabs.create` only — opening a URL needs no `tabs` permission, and none is
+   * `tabs.create` only: opening a URL needs no `tabs` permission, and none is
    * requested. Nothing here reads, lists or inspects the user's tabs.
    */
   namespace tabs {
@@ -341,13 +345,14 @@ declare const __TAP_AUTH_HEADERS__: string[];
 ```
 
 Hand-written rather than `@types/chrome`: the build stays dependency-free, and
-the file is a **list of what we touch** — the review question the Web Store
+the file is a **list of what we touch**, which is the review question the Web Store
 asks. Adding an API here is a visible diff. Swap for `@types/chrome` if the host
 already has it; nothing conflicts.
 
 ## tsconfig.json and package.json
 
 ```json
+// extension/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2022",
@@ -357,8 +362,7 @@ already has it; nothing conflicts.
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["node"],
-    "baseUrl": "."
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "chrome.d.ts"]
 }
@@ -366,9 +370,12 @@ already has it; nothing conflicts.
 
 If the host's root `tsconfig` fits, `extends` it and keep only `lib`,
 `types` and `include`. `"types": ["node"]` is for the build scripts and the
-tests, not the extension code.
+tests, not the extension code. There is no `baseUrl`: TypeScript 7 removed the
+option and fails the whole config with `TS5102`, verified against `tsc 7.0.2`.
+Nothing here needs it, because every import is relative.
 
 ```json
+// extension/package.json
 {
   "name": "browser-extension-connector",
   "version": "1.0.0",
@@ -384,8 +391,8 @@ it on every release; a machine on a stale build is otherwise invisible.
 ## Versioning and release
 
 1. Bump `package.json` version.
-2. `node build.mjs` → `dist/`; `node package.mjs` → the zip.
-3. Run the tests ([tests.md](tests.md)) — the format and zip tests read `dist/`.
+2. `node build.mjs` writes `dist/`; `node package.mjs` writes the zip.
+3. Run the tests ([tests.md](tests.md)): the format and zip tests read `dist/`.
 4. Upload `dist/` (zipped) to the Web Store, or serve the zip from the host.
 
 ## Checklist

@@ -85,7 +85,7 @@ describe("Engine: every response is handled", () => {
   /**
    * The host claims commands under a lease on *every* post. The pull-progress
    * post used to discard its response, so a command handed out there burned
-   * a lease and an attempt without running — and after enough misses was
+   * a lease and an attempt without running, and after enough misses was
    * marked failed having never executed.
    */
   it("runs commands handed out on the pull-progress post", async () => {

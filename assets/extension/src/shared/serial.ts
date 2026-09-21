@@ -2,7 +2,7 @@
  * A one-lane queue for async work.
  *
  * `chrome.storage.local` has no transactions, so every "read, change, write
- * back" races every other one — and the tap fires several at once each time
+ * back" races every other one, and the tap fires several at once each time
  * the page loads a screen, while the sync loop is acknowledging a batch. Two
  * overlapping read-modify-writes keep whichever finished last and silently
  * lose the other's records. For a tapped record that is a delay (it is
