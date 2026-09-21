@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Connector — <host app> ↔ <service>",
+  "version": "0.0.0",
+  "description": "Syncs your own <service> data with <host app>, from the session you are already signed in to. No password is ever stored or sent.",
+  "minimum_chrome_version": "120",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["https://example.invalid/*"],
+  "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "content_scripts": [
+    { "matches": ["https://example.invalid/*"], "js": ["net-tap.js"], "world": "MAIN", "run_at": "document_start" },
+    { "matches": ["https://example.invalid/*"], "js": ["content.js"], "world": "ISOLATED", "run_at": "document_start" }
+  ],
+  "options_page": "options.html",
+  "action": { "default_title": "Connector", "default_popup": "popup.html" }
+}

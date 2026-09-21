@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Connector settings</title>
+    <!-- Structure only. The host supplies its own look; keep the ids and class names, replace the rules. -->
+    <style>
+      :root { color-scheme: light dark; }
+      body { font: 14px/1.5 system-ui, sans-serif; margin: 0; padding: 24px; max-width: 760px; }
+      fieldset { border: 1px solid rgba(128,128,128,.35); border-radius: 8px; padding: 16px; margin: 0 0 16px; }
+      input { width: 100%; box-sizing: border-box; padding: 8px; }
+      button { padding: 8px 14px; margin-top: 12px; cursor: pointer; }
+      ul { list-style: none; padding: 0; margin: 0; }
+      li { padding: 8px 0; border-bottom: 1px solid rgba(128,128,128,.2); }
+      .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .grow { flex: 1 1 200px; min-width: 0; }
+      .actions { display: flex; gap: 8px; }
+      .actions button { margin-top: 0; }
+      /* A dot alone is not a status: every one is paired with a word. */
+      .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; }
+      .dot.ok { background: #12a150; } .dot.info { background: #3d7dd8; }
+      .dot.warn { background: #d18b00; } .dot.fail { background: #d13030; } .dot.idle { background: #888; }
+      .check { display: flex; gap: 8px; padding: 5px 0; }
+      .check-label { min-width: 150px; flex: none; font-weight: 500; }
+      .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+      .way dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0; }
+      .way dd { margin: 0; text-align: right; }
+      .msg { margin-top: 12px; padding: 10px; border-radius: 6px; }
+      .msg.ok { background: rgba(0,160,80,.12); } .msg.err { background: rgba(200,40,40,.12); }
+      .hint { font-size: 12.5px; opacity: .7; }
+    </style>
+  </head>
+  <body>
+    <h1>Connector</h1>
+
+    <fieldset>
+      <legend>Paired connections</legend>
+      <ul id="pairings"></ul>
+      <p class="hint" id="empty">No paired connections.</p>
+      <p class="hint">"Test connection" sends one empty request to the host app and checks, in order, everything sync needs. It changes nothing.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Pair with the host app</legend>
+      <label for="host">Host app address</label>
+      <input id="host" type="url" placeholder="https://app.example.com" autocomplete="off" />
+      <label for="pin">Pairing code</label>
+      <input id="pin" type="text" inputmode="numeric" maxlength="8" placeholder="123456" autocomplete="off" />
+      <button id="fetch">Show connections</button>
+      <div id="choices"></div>
+      <div id="message"></div>
+    </fieldset>
+
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

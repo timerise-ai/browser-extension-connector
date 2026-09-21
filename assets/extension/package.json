@@ -1,0 +1,7 @@
+{
+  "name": "browser-extension-connector",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Chrome MV3 connector: observes and acts on an external web service from the user's own signed-in session, syncing with a host app."
+}
