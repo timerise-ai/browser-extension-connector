@@ -62,7 +62,7 @@ mkdir -p ~/.agents/skills
 ln -s ~/.claude/skills/browser-extension-connector ~/.agents/skills/browser-extension-connector
 ```
 
-Update the skill with `git pull` in its directory. The current release is **0.1.1**. See
+Update the skill with `git pull` in its directory. The current release is **0.1.2**. See
 [CHANGELOG.md](CHANGELOG.md). The [skills index](https://github.com/timerise-ai/skills) lists the other
 Timerise Skills and how to install them all at once.
 
@@ -194,6 +194,7 @@ implementation's own history rather than from a run of this tree.
 | A one-off data export | A script pasted into DevTools, which is cheaper than an extension and stops existing afterwards |
 | One service's parsers, endpoints and quirks | An adapter skill on top of this one, written against `references/adapter-seam.md` |
 | The host's routes, staging tables, merge queues and console UI | The host's own idiom, to the contract in `references/server-contract.md` and the operator surface in `references/operations.md` |
+| Recording how employees work, for SOPs or automation scoping | The sibling [`ecommerce-process-mining`](https://github.com/timerise-ai/ecommerce-process-mining) skill, which captures consented DOM events from the tools staff already use; this one carries a service's data, not a record of the work |
 | Pairing and running unattended screens in a venue | [`digital-signage`](https://github.com/timerise-ai/digital-signage), which pairs displays by PIN and plays to them |
 
 ## Contributing

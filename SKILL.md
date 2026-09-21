@@ -48,6 +48,9 @@ infrastructure under any service adapter.
   ([adapter-seam.md](references/adapter-seam.md) says what it must provide).
 - **The host app's routes and schema**: described as a contract here, built in
   the host's own idiom ([server-contract.md](references/server-contract.md)).
+- **Recording how employees work, with their consent**: the
+  [`ecommerce-process-mining`](https://github.com/timerise-ai/ecommerce-process-mining)
+  skill. This one moves a service's data, not a record of the work.
 
 ## Architecture
 
