@@ -112,18 +112,27 @@ pacing down. No inbound connection to the user's machine is needed.
 0. Fill the seam contract and agree record, pull and command kinds with the
    host: [adaptation.md](references/adaptation.md).
 1. Read the shape and the credential rules: [architecture.md](references/architecture.md).
-2. Copy `assets/extension/`, set hosts and rationale:
-   [manifest-and-permissions.md](references/manifest-and-permissions.md).
+2. Copy `assets/extension/` **verbatim**, set hosts and rationale:
+   [manifest-and-permissions.md](references/manifest-and-permissions.md). Edit only
+   the adapter, `tap-config.ts`, `ADAPTERS`, `PROVIDER`, the manifest hosts,
+   `PERMISSIONS.md` and `strings.ts`; for cookie auth, the relay's `credentials`
+   line with an empty allowlist, never both ([relay.md](references/relay.md)). A
+   defect you find goes in the handover, not in a patch.
 3. Implement the host's two endpoints to the contract:
-   [server-contract.md](references/server-contract.md).
+   [server-contract.md](references/server-contract.md). PIN and pepper come from
+   the environment, with no default in any tracked file.
 4. Write the adapter (its own skill) against the seam:
    [adapter-seam.md](references/adapter-seam.md), then point the tap config at it:
    [main-world-tap.md](references/main-world-tap.md).
-5. Build, test, load unpacked, pair over loopback:
-   [build-and-package.md](references/build-and-package.md),
+5. `npm i -D esbuild typescript vitest @types/node` (the registry is not an
+   external service), then build, run the suites unmodified with vitest, load
+   unpacked, pair over loopback: [build-and-package.md](references/build-and-package.md),
    [tests.md](references/tests.md), [pairing-ui.md](references/pairing-ui.md).
 6. Put the operator surface in the host before going live:
    [operations.md](references/operations.md).
+7. Hand over: nothing syncs while the browser is closed, pulls and commands need
+   a signed-in service tab, and the hosts and parser stay unverified until
+   checked against live traffic.
 
 ## Reference directory
 

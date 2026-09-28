@@ -197,9 +197,15 @@ export class RecordQueue {
     });
   }
 
-  /** Called once the drop count has been reported, so it is not counted twice. */
-  async clearDropped(): Promise<void> {
-    await this.store.set(DROPPED_KEY, 0);
+  /**
+   * Called once `reported` drops have reached the host, so they are not counted
+   * twice. Subtracts rather than zeroes, inside the lane: a push that overflowed
+   * while the post was in flight counted more, and zeroing lost them unreported.
+   */
+  async clearDropped(reported: number): Promise<void> {
+    return this.lane.run(async () => {
+      await this.store.set(DROPPED_KEY, Math.max(0, (await this.droppedCount()) - reported));
+    });
   }
 
   async size(): Promise<number> {

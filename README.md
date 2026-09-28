@@ -103,10 +103,10 @@ the skill stays cheap in context until a topic is actually needed.
 | `references/pairing-ui.md` | The options page: the PIN flow, the origin permission request, test connection, unpair |
 | `references/popup-and-strings.md` | The read-only popup and the strings map every user-facing literal goes through |
 | `references/build-and-package.md` | esbuild with two formats, the deterministic zip, `chrome.d.ts`, the tsconfig, the release order |
-| `references/tests.md` | The nine suites, 70 tests, what each one pins, and how to test an adapter |
+| `references/tests.md` | The ten suites, 76 tests, what each one pins, and how to test an adapter |
 | `references/operations.md` | The runbook: what the host must show per connection, silence, kill switch, extension reloads |
 | `references/provenance.md` | The engineering ledger: what the audit of the earlier implementation changed and how the templates verify it, what was kept deliberately, and what is new in the skill |
-| `assets/extension/` | The runnable extension tree the references quote: sources, the hand-written `chrome.d.ts`, the build and pack scripts, and the nine test suites |
+| `assets/extension/` | The runnable extension tree the references quote: sources, the hand-written `chrome.d.ts`, the build and pack scripts, and the ten test suites |
 | `evals/` | The prompts an operator types after installing (`prompts.md`) and one file per agent eval: the skill installed into an empty Next.js app, one prompt, no help, then type-checked, built and tested |
 | `.github/workflows/agent-eval.yml` | The caller of the index's eval workflow, copied verbatim from the standard: prompt 1 in Claude Code, Codex CLI and Gemini CLI on every published release, any prompt on a maintainer's dispatch |
 
@@ -182,7 +182,7 @@ names, quoted. From that directory:
 ```bash
 npm i -D esbuild typescript vitest @types/node
 node build.mjs && node package.mjs      # five bundles, then the deterministic zip
-npx vitest run --dir test                # 9 files, 70 tests
+npx vitest run --dir test                # 10 files, 76 tests
 npx tsc --noEmit -p tsconfig.json --noUncheckedIndexedAccess
 ```
 

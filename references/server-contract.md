@@ -140,6 +140,12 @@ followed by the token, in a table nobody but the server can read, keyed by conne
 row delete. Rotating the PIN does not disconnect paired browsers; "disconnect"
 does. Re-pairing a connection invalidates its previous token.
 
+The PIN and the pepper are secrets: read both from the environment at request
+time, with no default value in any tracked file, since a default pepper is one
+every copy of the source shares. An unset PIN is a tenant with no PIN, answered
+`401` like a wrong one; an unset pepper refuses to pair rather than hash with a
+stand-in.
+
 ## `POST <syncUrl>`: the one sustaining request
 
 Body: `SyncRequest`. Answer: `SyncResponse`. Order inside the handler is
@@ -251,6 +257,7 @@ function parseRecords(raw: readonly unknown[]) {
 ## Checklist
 
 - [ ] Tenant from host/session, never from the body
+- [ ] PIN and pepper from the environment, no default in any tracked file
 - [ ] Records validated individually; `rejected` populated
 - [ ] Heartbeat before staging; `error: null` clears
 - [ ] Content hash computed server-side over the normalised payload

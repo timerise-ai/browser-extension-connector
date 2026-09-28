@@ -57,6 +57,7 @@ function emit(url: string, status: number, method: string, body: string): void {
   } catch {
     return; // not JSON: not ours
   }
+  sessionSeen(url);
   window.postMessage({ source: TAP_MESSAGE, url, status, method, body: parsed }, window.location.origin);
 }
 
@@ -74,6 +75,23 @@ function emitAuth(origin: string, headers: Record<string, string>): void {
   if (fingerprint === lastAuthFingerprint) return;
   lastAuthFingerprint = fingerprint;
   window.postMessage({ source: AUTH_MESSAGE, origin, headers }, window.location.origin);
+}
+
+/**
+ * A cookie-authenticated service has no header to allowlist: the browser
+ * attaches the cookie to the relay's request itself. Its session signal is a
+ * captured request that came back 2xx with JSON, which a login page does not,
+ * so with an empty allowlist the tap posts that origin with no headers and the
+ * relay's origin check applies unchanged. Without this the relay never holds a
+ * session and refuses every pull.
+ */
+function sessionSeen(url: string): void {
+  if (AUTH_HEADERS.length > 0) return;
+  try {
+    emitAuth(new URL(url, window.location.href).origin, {});
+  } catch {
+    /* never break the page */
+  }
 }
 
 function collectAuth(url: string, get: (name: string) => string | null): void {

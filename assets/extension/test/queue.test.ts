@@ -62,8 +62,18 @@ describe("RecordQueue", () => {
       const q = new RecordQueue(store, 1);
       await q.push([item("1"), item("2")]);
       expect(await q.droppedCount()).toBe(1);
-      await q.clearDropped();
+      await q.clearDropped(1);
       expect(await q.droppedCount()).toBe(0);
+    });
+
+    /** Zeroing once the post returned lost whatever overflowed while it was in flight. */
+    it("keeps drops counted while the report was in flight", async () => {
+      const q = new RecordQueue(store, 1);
+      await q.push([item("1"), item("2")]);
+      const reported = await q.droppedCount();
+      await q.push([item("3")]);
+      await q.clearDropped(reported);
+      expect(await q.droppedCount()).toBe(1);
     });
   });
 

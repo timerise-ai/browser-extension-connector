@@ -3,6 +3,13 @@
 Dependency-free apart from `esbuild` (and `vitest` + `typescript` for the
 checks). Five bundles, two formats, one deterministic zip.
 
+Install them as dev dependencies before the first build:
+`npm i -D esbuild typescript vitest @types/node`. The package registry is not
+an external service, so a note that none are reachable does not forbid it. If
+the install really fails, say so in the handover. Never swap esbuild for another
+bundler or convert the suites to another runner: `build.mjs` is what injects the
+tap's config and keeps the content scripts classic, and the suites pin both.
+
 ## Layout inside the host repo
 
 ```

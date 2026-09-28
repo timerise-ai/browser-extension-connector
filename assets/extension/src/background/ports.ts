@@ -1,3 +1,5 @@
+import type { RelayFetchResult } from "../shared/messages";
+
 /**
  * Every live relay port, so a request can go to *any* open service tab.
  *
@@ -27,4 +29,15 @@ export class PortRegistry<P extends { postMessage(message: unknown): void }> {
   get size(): number {
     return this.ports.size;
   }
+}
+
+/**
+ * What a relay answer resolves to. A refusal (no session seen, another origin,
+ * the tab closed) is a transport failure, not an HTTP answer: it throws, as a
+ * missing service tab does, so its reason reaches the host's `error` instead of
+ * reaching the adapter as a bare status 0.
+ */
+export function relayAnswer(result: RelayFetchResult): { ok: boolean; status: number; body: unknown } {
+  if (result.error) throw new Error(result.error);
+  return { ok: result.ok, status: result.status, body: result.body };
 }

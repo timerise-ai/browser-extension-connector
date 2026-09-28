@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PortRegistry } from "../src/background/ports";
+import { PortRegistry, relayAnswer } from "../src/background/ports";
 
 /**
  * Two service tabs, then the newer one closes. With a single "current port"
@@ -35,5 +35,25 @@ describe("PortRegistry", () => {
     ports.add(first);
     ports.add(port("second"));
     expect(ports.any()).toBe(first);
+  });
+});
+
+/**
+ * A relay refusal once resolved as `{ ok: false, status: 0 }`, so "no session
+ * seen" reached the adapter, and then the host, as a bare status 0.
+ */
+describe("relayAnswer", () => {
+  it("throws a refusal with the relay's own reason", () => {
+    expect(() =>
+      relayAnswer({ type: "relay-fetch-result", id: "r1", ok: false, status: 0, body: null, error: "No session seen" }),
+    ).toThrow("No session seen");
+  });
+
+  it("hands an HTTP answer through, a failing status included", () => {
+    expect(relayAnswer({ type: "relay-fetch-result", id: "r2", ok: false, status: 404, body: { e: 1 } })).toEqual({
+      ok: false,
+      status: 404,
+      body: { e: 1 },
+    });
   });
 });

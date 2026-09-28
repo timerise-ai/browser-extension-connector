@@ -117,7 +117,8 @@ async function performFetch(msg: RelayFetchRequest): Promise<RelayFetchResult> {
       // No cookies: header-authenticated APIs do not use them, and sending
       // ambient credentials where they are not needed only widens what the
       // request carries. If your service is cookie-authenticated, this is the
-      // one line to change, and then the header allowlist may be empty.
+      // one line to change, and then the header allowlist is empty: one or the
+      // other, never cookies and replayed headers together.
       credentials: "omit",
       headers: {
         Accept: "application/json",

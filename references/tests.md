@@ -1,7 +1,11 @@
 # Shipped tests
 
 Every suite lives in `assets/extension/test/` and runs with vitest against the
-sources in `assets/extension/src/`. Run them from the extension directory:
+sources in `assets/extension/src/`. Copy them unmodified and run them with vitest,
+installed with `npm i -D vitest` (the package registry is not an external
+service); never convert them to `node:test` or another runner, and put an
+adapter's or a host's tests in files of their own beside them. Run them from the
+extension directory:
 
 ```bash
 npx vitest run --dir test        # unit suites
@@ -16,11 +20,12 @@ npx tsc --noEmit -p tsconfig.json --noUncheckedIndexedAccess
 |---|---|---|
 | `serial.test.ts` | 3 | tasks run in order; one throwing does not stop the lane |
 | `context.test.ts` | 11 | orphaned-context wording, both directions; non-Errors never match |
-| `queue.test.ts` | 17 | oldest-first; newest content wins; drops counted and cleared only once reported; ack by identity and version; overlapping push/ack loses nothing; failed write discards the cache; account tagging; batch size within the host cap |
+| `queue.test.ts` | 18 | oldest-first; newest content wins; drops counted and cleared only once reported, a drop counted mid-post kept; ack by identity and version; overlapping push/ack loses nothing; failed write discards the cache; account tagging; batch size within the host cap |
 | `routing.test.ts` | 10 | records go only to the pairing bound to their account; untagged goes to the first; unbound pairing routes as the page shows; orphans only once everything is bound |
 | `client.test.ts` | 10 | backoff escalates and caps, resets on success; 401 throws; foreign 200 is no answer; deadline handed to `fetch` |
-| `ports.test.ts` | 3 | a live port survives another's disconnect; empty only when all gone |
+| `ports.test.ts` | 5 | a live port survives another's disconnect; empty only when all gone; a relay refusal throws with its own reason |
 | `engine.test.ts` | 7 | **commands from a progress-only response are run** and acked next post; acks ride the next post; acks survive a failed post; unknown kinds unacked; batch id stable across a retry; `queued` excludes the batch; `error` sent as `null` once reported |
+| `tap.test.ts` | 3 | the tap built as the build builds it posts only allowlisted headers; with an empty allowlist, the origin once a captured JSON answer succeeds, and nothing for a login page |
 | `content-script-format.test.ts` | 7 | built content scripts carry no top-level `import`/`export`; every manifest content script covered; tap defines injected |
 | `package.test.ts` | 2 | zip read back through its central directory with `node:zlib` alone; every manifest-named file present; bytes match `dist/` |
 
@@ -211,7 +216,7 @@ describe("Engine: batch identity", () => {
 ```ts
 // extension/test/ports.test.ts
 import { describe, expect, it } from "vitest";
-import { PortRegistry } from "../src/background/ports";
+import { PortRegistry, relayAnswer } from "../src/background/ports";
 
 /**
  * Two service tabs, then the newer one closes. With a single "current port"
@@ -247,6 +252,26 @@ describe("PortRegistry", () => {
     ports.add(first);
     ports.add(port("second"));
     expect(ports.any()).toBe(first);
+  });
+});
+
+/**
+ * A relay refusal once resolved as `{ ok: false, status: 0 }`, so "no session
+ * seen" reached the adapter, and then the host, as a bare status 0.
+ */
+describe("relayAnswer", () => {
+  it("throws a refusal with the relay's own reason", () => {
+    expect(() =>
+      relayAnswer({ type: "relay-fetch-result", id: "r1", ok: false, status: 0, body: null, error: "No session seen" }),
+    ).toThrow("No session seen");
+  });
+
+  it("hands an HTTP answer through, a failing status included", () => {
+    expect(relayAnswer({ type: "relay-fetch-result", id: "r2", ok: false, status: 404, body: { e: 1 } })).toEqual({
+      ok: false,
+      status: 404,
+      body: { e: 1 },
+    });
   });
 });
 ```

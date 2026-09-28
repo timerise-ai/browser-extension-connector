@@ -127,7 +127,8 @@ async function performFetch(msg: RelayFetchRequest): Promise<RelayFetchResult> {
       // No cookies: header-authenticated APIs do not use them, and sending
       // ambient credentials where they are not needed only widens what the
       // request carries. If your service is cookie-authenticated, this is the
-      // one line to change, and then the header allowlist may be empty.
+      // one line to change, and then the header allowlist is empty: one or the
+      // other, never cookies and replayed headers together.
       credentials: "omit",
       headers: {
         Accept: "application/json",
@@ -211,9 +212,12 @@ A loud failure is retried; a silent empty page is not.
 `credentials: "omit"` is deliberate for header-authenticated services: sending
 ambient cookies where they are not needed only widens what the request
 carries. For a **cookie-authenticated** service, change that one line to
-`"include"`, export an empty header allowlist from the adapter, and the same
-origin check still applies. Do not request the `cookies` permission: the
-browser attaches the cookie itself.
+`"include"` and export an empty header allowlist from the adapter; the tap then
+marks the session from the first captured 2xx JSON answer, and the same origin
+check still applies. These are the two variants: headers with `"omit"`, or
+cookies with an empty allowlist, never both, because a hybrid replays headers
+nobody verified the service needs. Do not request the `cookies` permission:
+the browser attaches the cookie itself.
 
 ## Orphaned content scripts
 

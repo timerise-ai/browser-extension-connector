@@ -200,7 +200,7 @@ export class Engine {
     // Acknowledge by identity, not by count: the tap may have queued more.
     await this.deps.queue.ack(batch);
     this.batchIds.delete(pairing.connectionId);
-    if (dropped) await this.deps.queue.clearDropped();
+    if (dropped) await this.deps.queue.clearDropped(dropped);
 
     await this.handleResponse(pairing, adapter, response, { pull });
     return response;

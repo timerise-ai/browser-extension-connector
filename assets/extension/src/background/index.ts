@@ -15,7 +15,7 @@ import { bindPairing, loadLastPosts, loadPairings, recordLastPost } from "./conf
 import { ALARM, DEFAULT_POLL_MS, KEEPALIVE_PORT, RELAY_TIMEOUT_MS, SLOW_POLL_MS } from "./constants";
 import { diagnose } from "./diagnostics";
 import { Engine } from "./engine";
-import { PortRegistry } from "./ports";
+import { PortRegistry, relayAnswer } from "./ports";
 import { RecordQueue, chromeStore } from "./queue";
 
 /**
@@ -92,7 +92,11 @@ const http: ServiceHttp = async (req) => {
     }, RELAY_TIMEOUT_MS);
     pending.set(id, (result) => {
       clearTimeout(timeout);
-      resolve({ ok: result.ok, status: result.status, body: result.body });
+      try {
+        resolve(relayAnswer(result));
+      } catch (err) {
+        reject(err);
+      }
     });
     try {
       port.postMessage(message);

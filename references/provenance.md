@@ -46,6 +46,23 @@ including the strings that travel to the host in `error`.
 
 Renamed `MAX_BODY_CHARS`; behaviour unchanged.
 
+## Found by the agent evals
+
+Defects in this skill's own templates, found by scoring the agent eval runs against 0.1.3: an agent edited a
+template, and the edit was reproduced against the shipped code before it was adopted. Each is fixed with a
+test that fails on the old code. None came from the earlier implementation.
+
+- **The cookie-authenticated variant could never pull.** With the empty header allowlist the relay
+  documents, the tap posted no session, so the relay refused every pull and command as "no session seen".
+  **Shipped:** with an empty allowlist the tap posts the origin with no headers once a captured request comes
+  back 2xx with JSON, see [main-world-tap.md](main-world-tap.md); pinned by `tap.test.ts`.
+- **A relay refusal reached the adapter as a bare status 0.** The worker resolved it as an HTTP answer and
+  dropped the relay's reason. **Shipped:** `relayAnswer` throws it, as a missing tab does, see
+  [service-worker-loop.md](service-worker-loop.md); pinned by `ports.test.ts`.
+- **Drops counted while a post was in flight were never reported.** The engine zeroed the count once the post
+  returned. **Shipped:** `clearDropped(reported)` subtracts inside the lane, see
+  [offline-queue.md](offline-queue.md); pinned by `queue.test.ts`.
+
 ## Kept deliberately
 
 - **`credentials: "omit"` on both the host and the service requests.** Looks like an oversight; it is the
@@ -86,7 +103,7 @@ Renamed `MAX_BODY_CHARS`; behaviour unchanged.
 ## Verified, and not
 
 Every template compiles under `strict` and `--noUncheckedIndexedAccess` against the hand-written
-`chrome.d.ts`, the 70 tests pass, and the esbuild build and the zip round-trip, all run on TypeScript 7.0.2,
+`chrome.d.ts`, the 76 tests pass, and the esbuild build and the zip round-trip, all run on TypeScript 7.0.2,
 vitest 5.0.1 and Node 22.21.1. The template `tsconfig.json` carries no `baseUrl`: TypeScript 7 removed the
 option and fails the whole config with `TS5102`, verified by running that version against this tree.
 

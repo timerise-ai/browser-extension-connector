@@ -22,7 +22,8 @@ The skill was written by the engineer who has shipped this module; the earlier i
 against was a connector extension carrying one service's data into a host app.
 `references/provenance.md` is the ledger of that audit: five defects fixed and how the templates verify them,
 seven choices kept deliberately with the reason each is safe, and five things designed here that have never
-run in production. That file is the rationale layer: read it before "simplifying" anything.
+run in production, plus the template defects the agent evals have found since. That file is the rationale
+layer: read it before "simplifying" anything.
 
 ## Structure
 
@@ -90,7 +91,7 @@ run in production. That file is the rationale layer: read it before "simplifying
   ```bash
   npm i -D esbuild typescript vitest @types/node
   node build.mjs && node package.mjs
-  npx vitest run --dir test        # 9 files, 70 tests
+  npx vitest run --dir test        # 10 files, 76 tests
   npx tsc --noEmit -p tsconfig.json --noUncheckedIndexedAccess
   ```
 
@@ -99,8 +100,8 @@ run in production. That file is the rationale layer: read it before "simplifying
   build before vitest or they fail for the wrong reason.
 - **Identifiers are shared across files.** `ConnectorAdapter`, `ConnectorRecord`, `Command`, `Ack`,
   `SyncRequest`, `SyncResponse`, `PairRequest`, `PairResponse`, `Engine`, `EngineDeps`, `RecordQueue`,
-  `PortRegistry`, `Serial`, `SyncClient`, `SyncPayload`, `Pairing`, `LastPost`, `Store`, `chromeStore`,
-  `diagnose`, `isContextInvalidated`, `accountFor`, `STRINGS`, `t`, `ADAPTERS`, `stubAdapter`,
+  `PortRegistry`, `relayAnswer`, `Serial`, `SyncClient`, `SyncPayload`, `Pairing`, `LastPost`, `Store`,
+  `chromeStore`, `diagnose`, `isContextInvalidated`, `accountFor`, `STRINGS`, `t`, `ADAPTERS`, `stubAdapter`,
   `TAP_CAPTURE`, `TAP_AUTH_HEADERS`, the constants `MAX_RECORDS_PER_POST`, `MAX_QUEUE_ITEMS`, `ALARM`,
   `KEEPALIVE_PORT`, `DEFAULT_POLL_MS`, `SLOW_POLL_MS`, `RELAY_TIMEOUT_MS`, and the build defines
   `__AGENT_VERSION__`, `__TAP_CAPTURE__`, `__TAP_AUTH_HEADERS__` appear in several references and in the
@@ -114,7 +115,7 @@ run in production. That file is the rationale layer: read it before "simplifying
   unknown command kinds left unacknowledged, the alarm read with `alarms.get` before it is created, and the
   batch id keyed on content rather than time: each is a ledger entry in `provenance.md` or a documented
   judgement call. Check it before touching one.
-- **The numbers that remain are load-bearing.** 70 tests across 9 suites, the 2,000-record buffer, the 200
+- **The numbers that remain are load-bearing.** 76 tests across 10 suites, the 2,000-record buffer, the 200
   records per post, the 20 s keepalive ping, the 30 s default poll and the 60 s slow poll, the 30 s relay
   timeout, `minimum_chrome_version: 120`, the roughly 10 MB `chrome.storage.local` ceiling and the roughly
   30 s worker eviction. They were verified against this repository, against Chrome's documented limits, or
