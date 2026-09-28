@@ -22,3 +22,9 @@ isolated: true
 timedOut: false
 runUrl: https://github.com/timerise-ai/browser-extension-connector/actions/runs/36486840837
 ---
+
+Rubric 8/8, scored from the summary. The 76 shipped tests run unchanged under vitest, installed from the
+registry; the cookie variant is taken as documented (`"include"` with an empty allowlist, "one approach,
+never both"); every secret is in `.env.example` with no default; and the final message leads with all three
+handover points. It now keeps records posted while paused rather than rejecting them, which the server
+contract still does not settle.
