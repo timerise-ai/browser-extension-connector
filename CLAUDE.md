@@ -41,6 +41,13 @@ run in production. That file is the rationale layer: read it before "simplifying
   `tests.md` the suites; `operations.md` the runbook; `provenance.md` the audit.
 - `assets/extension/`: the runnable copy of everything the references quote, so a target project starts from
   a tree that already builds, typechecks and passes its tests.
+- `evals/`: `prompts.md` holds what an operator types after installing, in their words; the first prompt
+  is the agent eval run before every release. Every other file there is one eval run: measured frontmatter
+  that is never edited, then the notes of the person who ran it. Add a prompt rather than rewording one that
+  has results. The procedure is section 10 of the index's STANDARD.md.
+- `.github/workflows/agent-eval.yml`: the caller of the index's reusable eval workflow, copied verbatim from
+  section 10 of the standard and run on every published release and on a maintainer's dispatch. It is the
+  same in every skill; never edit it, and never add a trigger on `push` or `pull_request`.
 
 ## Editing conventions
 

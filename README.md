@@ -84,6 +84,10 @@ the skill stays cheap in context until a topic is actually needed.
 | File | Contents |
 |---|---|
 | `SKILL.md` | Entry point: architecture diagram, six critical facts, six hard rules, quick start, and the reference directory |
+| `README.md` | This front door |
+| `CHANGELOG.md` | Keep a Changelog, one section per release, newest first |
+| `CLAUDE.md` | What this repository is and the conventions for editing the skill itself |
+| `LICENSE` | MIT |
 | `references/adaptation.md` | The seam contract with the host app: record, pull and command kinds, the host probe, the rename table, the order of work |
 | `references/architecture.md` | The three execution contexts and why each exists, the credential rules, why it polls, the honest ceiling on the cadence |
 | `references/manifest-and-permissions.md` | The manifest, every permission with its rationale, what is deliberately absent, single purpose, Web Store versus self-hosted |
@@ -103,6 +107,8 @@ the skill stays cheap in context until a topic is actually needed.
 | `references/operations.md` | The runbook: what the host must show per connection, silence, kill switch, extension reloads |
 | `references/provenance.md` | The engineering ledger: what the audit of the earlier implementation changed and how the templates verify it, what was kept deliberately, and what is new in the skill |
 | `assets/extension/` | The runnable extension tree the references quote: sources, the hand-written `chrome.d.ts`, the build and pack scripts, and the nine test suites |
+| `evals/` | The prompts an operator types after installing (`prompts.md`) and one file per agent eval: the skill installed into an empty Next.js app, one prompt, no help, then type-checked, built and tested |
+| `.github/workflows/agent-eval.yml` | The caller of the index's eval workflow, copied verbatim from the standard: prompt 1 in Claude Code, Codex CLI and Gemini CLI on every published release, any prompt on a maintainer's dispatch |
 
 The seam is the table at the top of [`references/adaptation.md`](references/adaptation.md), and it bounds
 three things. The **service** sits behind `ConnectorAdapter`, so a service changing its shape is an extension
