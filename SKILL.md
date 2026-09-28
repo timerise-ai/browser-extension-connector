@@ -130,9 +130,9 @@ pacing down. No inbound connection to the user's machine is needed.
    [tests.md](references/tests.md), [pairing-ui.md](references/pairing-ui.md).
 6. Put the operator surface in the host before going live:
    [operations.md](references/operations.md).
-7. Hand over: nothing syncs while the browser is closed, pulls and commands need
-   a signed-in service tab, and the hosts and parser stay unverified until
-   checked against live traffic.
+7. Say in your final message, not only in a README: nothing syncs while the
+   browser is closed, pulls and commands need a signed-in service tab, and the
+   hosts and parser stay unverified until checked against live traffic.
 
 ## Reference directory
 
