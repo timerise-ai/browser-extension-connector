@@ -22,3 +22,11 @@ isolated: true
 timedOut: false
 runUrl: https://github.com/timerise-ai/browser-extension-connector/actions/runs/36483346642
 ---
+
+Rubric 8/8, scored from the summary. The 76 shipped tests run unmodified under vitest beside 30 of its own;
+the template is reported changed only where it is meant to be; header auth with the two variants stated as
+"one or the other, never both"; PIN, pepper and admin password from the environment with no defaults; and
+the final message says nothing syncs while the browser is closed, that pulls need a signed-in portal tab, and
+that the address and parsing are guesses until checked against real traffic. Not scored, but worth a clause
+later: a paused connection rejects incoming orders by name, which the extension then drops from its buffer;
+the server contract is silent on what a paused connection does with records.
