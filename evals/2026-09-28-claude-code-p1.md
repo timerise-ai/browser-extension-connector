@@ -22,3 +22,11 @@ isolated: true
 timedOut: false
 runUrl: https://github.com/timerise-ai/browser-extension-connector/actions/runs/36439501159
 ---
+
+Rubric 6/8. The checks pass, vitest runs the 70 shipped tests unmodified beside 32 of its own, and a local
+rerun on the same model showed every template as shipped apart from documented renames and the relay's
+`credentials` line, with the adapter plugged in through `tap-config.ts` and `ADAPTERS`. Two items fail. It
+switched the relay to `credentials: "include"` but kept a four-header allowlist, a mix of the two documented
+variants. The cause was the skill: with the empty allowlist the cookie variant documents, the tap never
+posted a session, so every pull would have been refused (fixed in 0.1.4). The handover says the portal must
+be open and signed in, but not that nothing syncs while the browser is closed, which `SKILL.md` says to state.
