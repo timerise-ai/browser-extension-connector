@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-09-28
+
+Fix release, from scoring the prompt-1 agent eval runs against 0.1.3. Connectors built from an earlier
+version should copy in `src/inject/net-tap.ts`, `src/background/ports.ts`, `src/background/queue.ts`,
+`src/background/engine.ts` and `src/background/index.ts`, and the three test files that pin them.
+
+### Fixed
+
+- The cookie-authenticated variant could never pull: with the empty header allowlist that `relay.md`
+  documents, the tap posted no session and the relay refused every request. With an empty allowlist the tap
+  now posts the origin with no headers once a captured request comes back 2xx with JSON, which a login page
+  does not. Pinned by the new `tap.test.ts`.
+- A relay refusal (no session seen, another origin, the tab closed) reached the adapter as a bare status 0.
+  `relayAnswer` in `ports.ts` now throws it with the relay's reason, as a missing service tab already did.
+- Drops counted while a post was in flight were zeroed unreported. `clearDropped(reported)` subtracts what
+  the post carried, inside the queue's lane.
+- 76 tests across 10 suites, up from 70 across 9.
+
+### Changed
+
+- The quick start in `SKILL.md` says to copy `assets/extension/` verbatim and names the edits allowed, to
+  install `esbuild`, `typescript`, `vitest` and `@types/node` from the registry (which is not an external
+  service) and run the suites unmodified with vitest, to read the PIN and pepper from the environment with no
+  default, and to hand over that nothing syncs while the browser is closed.
+- `build-and-package.md` and `tests.md` forbid swapping the bundler or converting the suites to another
+  runner; `server-contract.md` forbids a default PIN or pepper in tracked source; `relay.md` and
+  `main-world-tap.md` state the two auth variants and that they are never mixed.
+
 ## [0.1.3] - 2026-09-28
 
 Documentation release. The skill content is unchanged from 0.1.2.
